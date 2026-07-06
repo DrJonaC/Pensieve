@@ -12,11 +12,11 @@ export function InputBox({ value, onChange, onSubmit, isLoading = false, modeLab
   return (
     <div className="mystic-panel rounded-[1.75rem] p-4 md:p-5">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <label htmlFor="query" className="block text-sm uppercase tracking-[0.24em] text-gold">
+        <label htmlFor="query" className="block text-sm uppercase tracking-[0.24em] text-mist/80">
           Query
         </label>
         {modeLabel ? (
-          <span className="rounded-full border border-gold/20 bg-black-surface px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-mist shadow-[0_0_20px_rgba(212,175,55,0.08)]">
+          <span className="rounded-full border border-gold/20 bg-gold/[0.05] px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-mist/80">
             {modeLabel}
           </span>
         ) : null}
@@ -33,15 +33,15 @@ export function InputBox({ value, onChange, onSubmit, isLoading = false, modeLab
             }
           }}
           placeholder="Ask something..."
-          className="min-h-14 flex-1 rounded-[1.25rem] border border-gold/20 bg-black-surface px-4 text-sm text-white outline-none transition placeholder:text-mist focus:border-gold/60 focus:shadow-pulse disabled:cursor-not-allowed disabled:opacity-70"
+          className="min-h-14 flex-1 rounded-[1.25rem] border border-gold/20 bg-black-card/80 px-4 text-sm text-white outline-none transition placeholder:text-mist/50 focus:border-gold/55 focus:shadow-pulse disabled:cursor-not-allowed disabled:opacity-70"
         />
         <button
           type="button"
           onClick={onSubmit}
           disabled={isLoading}
-          className="rounded-[1.25rem] border border-gold bg-gold px-5 py-3 text-sm font-semibold text-black transition hover:bg-gold-light hover:shadow-pulse disabled:cursor-not-allowed disabled:opacity-70"
+          className="rounded-[1.25rem] border border-gold/50 bg-gradient-to-r from-gold-dark to-gold px-5 py-3 text-sm font-medium text-slate-900 transition hover:from-gold hover:to-gold-light hover:shadow-[0_0_20px_rgba(212,175,55,0.3)] disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {isLoading ? "Running detection..." : "Scan Memory"}
+          {isLoading ? "Consulting the basin..." : "Surface Memory"}
         </button>
       </div>
     </div>

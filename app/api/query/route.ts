@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateResponse } from "@/lib/openai";
 import { detectCDV, type CDVMemoryUnit, type TPLevel } from "@/lib/cdv";
-import { baseMemories } from "@/lib/memory";
 
 type QueryBody = {
   query?: unknown;
@@ -60,14 +59,8 @@ export async function POST(request: Request) {
     const body = (await request.json()) as QueryBody;
 
     if (!isValidBody(body)) {
-      console.error("[ROUTE ERROR] isValidBody failed. body keys:", Object.keys(body as object));
-      console.error("[ROUTE ERROR] memories valid:", isValidMemoryArray(body.memories));
-      console.error("[ROUTE ERROR] cdv_memories valid:", isValidMemoryArray(body.cdv_memories));
       return NextResponse.json({ ok: false, error: "Invalid request payload." }, { status: 500 });
     }
-
-    console.log("[TRACE baseMemories[3]]", baseMemories[3].id, "origin_tp:", baseMemories[3].origin_tp);
-    console.log("[TRACE route] memory-4 origin_tp:", body.memories.find(m => m.id === "memory-4")?.origin_tp);
 
     const cdvMap = Object.fromEntries(
       body.cdv_memories.map((memory) => {
@@ -85,12 +78,6 @@ export async function POST(request: Request) {
         return [memory.id, detectCDV(body.query, cdvMemory)];
       })
     );
-
-    console.log("[CDV Debug] query:", body.query);
-    for (const [memoryId, cdvResult] of Object.entries(cdvMap)) {
-      console.log(`[CDV Debug] memory_id=${memoryId} is_violation=${cdvResult.is_violation} severity=${cdvResult.severity}`);
-      console.log(`[CDV Debug]   reason: ${cdvResult.reason}`);
-    }
 
     const result = await generateResponse({
       query: body.query,
@@ -112,7 +99,8 @@ export async function POST(request: Request) {
       },
       meta: {
         provider: "openai",
-        model: "gpt-4.1-mini"
+        model: "gpt-4.1-mini",
+        mode: "live"
       }
     });
   } catch (error) {

@@ -1,5 +1,5 @@
-import { HomePanel } from "@/components/HomePanel";
+import { redirect } from "next/navigation";
 
-export default function HomePage() {
-  return <HomePanel />;
+export default function RootPage() {
+  redirect("/dashboard");
 }

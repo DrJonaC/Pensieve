@@ -70,7 +70,6 @@ function toQueryInput(memory: ScoredMemory): QueryMemoryInput {
 }
 
 export function partitionMemoriesForQuery(memories: readonly ScoredMemory[]): PartitionedMemories {
-  console.log("[TRACE pickTop input]", memories.map(m => ({ id: m.id, origin_tp: m.origin_tp })));
   return {
     llmMemories: memories.slice(0, 3).map(toQueryInput),
     cdvMemories: memories.map(toQueryInput)

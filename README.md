@@ -1,206 +1,162 @@
-# 🧠 Pensieve (冥想盆)
+# Pensieve Dashboard Plugin
 
-**Observe how memory shapes an answer.**
+Pensieve is a plugin-ready dashboard for structured LLM memory observability and lightweight governance.
 
-Pensieve is an interactive system for visualizing, interpreting, and managing how Large Language Models (LLMs) “remember” a user.
-It bridges the gap between **model-level mechanisms** and **user-level understanding**, making AI memory observable, explainable, and partially controllable.
+It is built around a simple product question:
 
----
+**if an LLM can remember a user, can that memory become visible, interpretable, and gently governable?**
 
-## ✨ Motivation
+Pensieve turns that question into a practical local plugin surface. Instead of treating memory as a hidden implementation detail, it exposes a structured memory field that users can inspect, interpret, and adjust through reversible controls.
 
-Modern LLMs increasingly rely on personalization and memory.
-However, users have little visibility into:
+## Why Pensieve Exists
 
-* What the model remembers
-* Why certain information resurfaces
-* Whether some memories are overly persistent or sensitive
+Most memory-enabled AI systems still behave like black boxes. A system may remember preferences, plans, sensitivities, or recurring themes, but the user rarely gets a clear answer to:
 
-Pensieve explores a new interface paradigm:
+- what is currently being remembered
+- what stays most prominent
+- what should be softened, hidden, or kept visible
 
-> **What if users could inspect and manage AI memory like a “Pensieve”?**
+Pensieve is designed as a response to that gap. It treats memory not only as a retrieval problem, but also as an observability and governance problem.
 
----
+## What The Current Plugin Does
 
-## 🔍 Key Features
+The current release focuses on a compact dashboard experience for structured memory visibility:
 
-### 1. Dual Perspective Interface
+- `Memory Snapshot`
+  Shows the current shape of the memory field.
+- `Priority Keywords`
+  Surfaces which ideas are most prominent across visible memory.
+- `Surfaced Themes`
+  Compresses memory fragments into higher-level themes.
+- `Memory List`
+  Displays ranked memory fragments with status, risk, and provenance cues.
+- `Reversible Actions`
+  Supports `pin`, `soften`, `hide`, and `restore`.
+- `Governance-Aware Display`
+  Applies `Full`, `Soft mask`, and `Protected` display tiers based on memory sensitivity.
 
-* **Surface Model View (Model Perspective)**
+## Why It Is Interesting
 
-  * Query input
-  * Response generation (Mock / Live LLM)
-  * Influence heatmap (token × memory)
-  * Memory summary
+Pensieve is not just a styled memory viewer.
 
-* **User View (Human Perspective)**
+It sits at the intersection of three layers:
 
-  * Keyword priority ranking
-  * Surfaced themes
-  * Memory fragments (cards)
-  * Explanations for why each memory surfaced
+1. `Memory retrieval`
+   Query-based memory-RAG remains the substrate for activating relevant memory.
+2. `Memory visibility`
+   The dashboard turns structured memory into an inspectable user-facing surface.
+3. `Memory governance`
+   Users can intervene through lightweight, reversible controls instead of destructive editing.
 
----
+That combination makes Pensieve useful both as a product prototype and as a research artifact for explainable, governable long-term LLM memory.
 
-### 2. Memory Abstraction
+## Architecture
 
-Each memory is represented as a structured unit:
+Pensieve is intentionally split into clean boundaries:
 
-* content (semantic memory)
-* keywords
-* relevance_score
-* activation_count
-* last_activated
-* risk label (heuristic)
-* status (active / softened / forgotten / pinned)
+- `dashboard core`
+  Derives snapshot metrics, ranking, keywords, and surfaced themes from structured memory records.
+- `memory provider`
+  Supplies current memory state and applies reversible actions.
+- `host adapter`
+  Defines how the dashboard communicates with an external host shell without coupling to one runtime.
+- `mock host`
+  Simulates sidebar lifecycle, visibility, width, and event flow for local development.
+- `local repository`
+  Persists memory state in a local JSON file for preview and iteration.
 
----
+This keeps the system modular: retrieval, storage, UI, and host integration can evolve independently without collapsing into a demo-only app.
 
-### 3. Explainability Layer
+## Current Release Shape
 
-Pensieve does not only generate answers—it explains them.
+This repository currently ships as a:
 
-In **Live Mode**, the system returns:
+**local Codex-compatible plugin source repository**
 
-* `answer`: model-generated response
-* `summary`: high-level memory activation summary
-* `memory_explanations`: why each memory surfaced
+It includes:
 
----
+- a host-agnostic dashboard core
+- a mock host sidebar shell
+- a local file-backed memory provider
+- governance-aware memory display rules
+- Codex-compatible plugin metadata
 
-### 4. Reversible Memory Controls
+The active product surface is:
 
-Users can interact with memory:
+- `/dashboard`
 
-* **Soften** → reduce influence
-* **Forget** → hide from view
-* **Pin** → keep prioritized
-* **Restore / Undo / Reset**
+## Local Persistence
 
-This simulates a controllable memory system.
+The preview persists its local memory repository in:
 
----
+- `data/pensieve-memory-records.json`
 
-### 5. Memory Risk Interpretation (Heuristic)
+The dashboard reads and updates this repository through:
 
-Pensieve introduces a lightweight risk layer:
+- `/api/dashboard-memory`
 
-* benign
-* sticky (overly persistent)
-* sensitive (profile-like)
-* dormant (hidden but retrievable)
-* leaky (unexpected resurfacing)
+This means dashboard actions survive refreshes in the local development preview.
 
----
+## OpenAI Integration
 
-## 🏗️ System Architecture
+The repository also retains the earlier query-based explainability path.
 
-### Frontend
+For server-side OpenAI usage, place your API key in `.env.local`:
 
-* Next.js (App Router)
-* TypeScript
-* Tailwind CSS
-* React Context (shared session state)
-
-### Backend
-
-* Next.js API Route (`/api/query`)
-* Server-side OpenAI integration
-
-### Core Modules
-
-* `lib/session.tsx` → shared state management
-* `lib/openai.ts` → LLM interface
-* `components/*` → UI + visualization
-* `app/*` → routed pages
-
----
-
-## 🔁 Data Flow
-
-```
-User Query
-   ↓
-Memory Activation (local heuristic)
-   ↓
-Top Memory Selection
-   ↓
-→ (Mock Mode) simulated response
-→ (Live Mode) OpenAI API call
-   ↓
-Structured Output:
-  - answer
-  - summary
-  - memory_explanations
-   ↓
-UI Rendering:
-  - response panel
-  - memory summary
-  - memory cards
-  - heatmap
-```
-
----
-
-## 🧪 Demo
-
-Try in Surface Model:
-
-```
-What do you know about me?
-```
-
-Then switch to **User View** to observe:
-
-* prioritized memory
-* themes
-* explanations
-
----
-
-## 🔐 Environment Setup
-
-Create `.env.local`:
-
-```
+```env
 OPENAI_API_KEY=your_api_key_here
 ```
 
-Then run:
+The key is read only on the server and is never exposed to the browser.
+
+## Local Development
+
+Install dependencies and start the preview:
 
 ```bash
 npm install
 npm run dev
 ```
 
----
+Then open the dashboard preview route in the local app.
 
-## ⚠️ Notes
+## Installation In Codex
 
-* Memory influence is currently **heuristic (simulated)**
-* The system focuses on **interpretability, not accuracy**
-* No real persistent user memory is stored
+For local plugin installation and personal marketplace setup, see:
 
----
+- [CODEX_PLUGIN_INSTALL.md](./CODEX_PLUGIN_INSTALL.md)
 
-## 🚀 Future Work
+## Release Notes
 
-* True retrieval-based memory system
-* Memory leak detection via adversarial prompts
-* Token-level attribution (attention tracing)
-* User-controlled memory privacy (seal / mask / redact)
-* Embedding-based similarity instead of keyword overlap
+For release framing and packaging guidance, see:
 
----
+- [PENSIEVE_PLUGIN_RELEASE.md](./PENSIEVE_PLUGIN_RELEASE.md)
 
-## 🧠 Key Insight
+For prelaunch QA and manual validation, see:
 
-Pensieve explores a core question:
+- [PENSIEVE_PRELAUNCH_CHECKLIST.md](./PENSIEVE_PRELAUNCH_CHECKLIST.md)
 
-> **AI should not only remember — it should explain what it remembers, and why.**
+## Showcase Notes
 
----
+For GitHub-facing project positioning, resume bullets, and repo presentation copy, see:
 
-## 📄 License
+- [docs/PENSIEVE_REPO_SHOWCASE.md](./docs/PENSIEVE_REPO_SHOWCASE.md)
+
+## Design Docs
+
+For reusable product and visual decisions, see:
+
+- [PENSIEVE_DASHBOARD_PLUGIN_DESIGN.md](./PENSIEVE_DASHBOARD_PLUGIN_DESIGN.md)
+- [PENSIEVE_DASHBOARD_VISUAL_STYLE.md](./PENSIEVE_DASHBOARD_VISUAL_STYLE.md)
+
+## Project Framing
+
+The most accurate one-line description today is:
+
+**Pensieve is a local plugin-ready memory dashboard for observing, interpreting, and lightly governing structured LLM memory.**
+
+That phrasing is intentionally precise: it reflects a real architectural direction and a real product boundary without overstating native host integration.
+
+## License
 
 MIT

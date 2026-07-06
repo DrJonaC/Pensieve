@@ -68,7 +68,6 @@ export function PensieveProvider({ children }: PropsWithChildren) {
   };
 
   const submitQuery = async () => {
-    console.log("[TRACE v999]", new Date().toISOString());
     let partitioned: PartitionedMemories | null = null;
     let query = "";
     let shouldCallLive = false;
@@ -80,14 +79,7 @@ export function PensieveProvider({ children }: PropsWithChildren) {
         : buildDormantActivationResult(baseMemories, current.modifiers, current.query);
 
       if (current.query.trim()) {
-        const partitionResult = partitionMemoriesForQuery(nextActivation.memories);
-        console.log("[TRACE partition]",
-          "llm count:", partitionResult.llmMemories.length,
-          "cdv count:", partitionResult.cdvMemories.length,
-          "memory-4 origin_tp:",
-          partitionResult.cdvMemories.find(m => m.id === "memory-4")?.origin_tp
-        );
-        partitioned = partitionResult;
+        partitioned = partitionMemoriesForQuery(nextActivation.memories);
       } else {
         partitioned = null;
       }
@@ -116,7 +108,6 @@ export function PensieveProvider({ children }: PropsWithChildren) {
       });
 
       const payload = (await response.json()) as QueryApiResponse;
-      console.log("[TRACE payload raw]", JSON.stringify(payload));
       if (!response.ok || !payload.ok || !payload.data || !payload.meta) {
         throw new Error(payload.error ?? "Live LLM mode failed.");
       }
@@ -142,7 +133,6 @@ export function PensieveProvider({ children }: PropsWithChildren) {
 
       setError(null);
     } catch (requestError) {
-      console.log("[TRACE live fetch error]", requestError);
       const message = requestError instanceof Error ? requestError.message : "Live LLM mode failed.";
       setError(`${message} Falling back to local mock narrative.`);
     } finally {

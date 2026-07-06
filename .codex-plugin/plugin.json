@@ -1,0 +1,35 @@
+{
+  "name": "pensieve-dashboard-plugin",
+  "version": "0.1.0",
+  "description": "A local dashboard plugin for structured LLM memory visibility and lightweight governance.",
+  "author": {
+    "name": "Pensieve Project"
+  },
+  "license": "MIT",
+  "keywords": [
+    "memory",
+    "llm",
+    "dashboard",
+    "observability",
+    "governance",
+    "plugin"
+  ],
+  "interface": {
+    "displayName": "Pensieve Dashboard",
+    "shortDescription": "Inspect and govern structured LLM memory from a local sidebar surface.",
+    "longDescription": "Pensieve Dashboard is a local plugin surface for observing structured LLM memory, tracking which memories stay prominent, and applying lightweight governance actions such as pin, soften, hide, and restore.",
+    "developerName": "Pensieve Project",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Open Pensieve and show what the system currently remembers most.",
+      "Inspect the local memory dashboard and highlight high-risk traces.",
+      "Review the current memory field and soften anything too persistent."
+    ],
+    "brandColor": "#7A9890"
+  }
+}

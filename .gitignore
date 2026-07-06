@@ -3,3 +3,7 @@ node_modules/
 .env.local
 .env
 npm-debug.log*
+.claude/
+tsconfig.tsbuildinfo
+.claude/
+tsconfig.tsbuildinfo

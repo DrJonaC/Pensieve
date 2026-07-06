@@ -1,5 +1,5 @@
-import { GuidePanel } from "@/components/GuidePanel";
+import { redirect } from "next/navigation";
 
 export default function GuidePage() {
-  return <GuidePanel />;
+  redirect("/dashboard");
 }

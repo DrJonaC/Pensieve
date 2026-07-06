@@ -1,5 +1,5 @@
-import { SurfaceModelPanel } from "@/components/SurfaceModelPanel";
+import { redirect } from "next/navigation";
 
 export default function SurfaceModelPage() {
-  return <SurfaceModelPanel />;
+  redirect("/dashboard");
 }
