@@ -34,6 +34,8 @@ The current release focuses on a compact dashboard experience for structured mem
   Supports `pin`, `soften`, `hide`, and `restore`.
 - `Governance-Aware Display`
   Applies `Full`, `Soft mask`, and `Protected` display tiers based on memory sensitivity.
+- `Governance Bridge`
+  Compiles user decisions into Markdown and JSON reports, applies desired state through the provider boundary, and verifies the result with an itemized receipt.
 
 ## Why It Is Interesting
 
@@ -131,6 +133,7 @@ For local plugin installation and personal marketplace setup, see:
 For release framing and packaging guidance, see:
 
 - [PENSIEVE_PLUGIN_RELEASE.md](./PENSIEVE_PLUGIN_RELEASE.md)
+- [Governance Bridge Update](./docs/updates/2026-07-17-governance-bridge.md)
 
 For prelaunch QA and manual validation, see:
 

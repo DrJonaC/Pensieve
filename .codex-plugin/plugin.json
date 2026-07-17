@@ -1,6 +1,6 @@
 {
   "name": "pensieve-dashboard-plugin",
-  "version": "0.1.0",
+  "version": "0.1.0+codex.20260717175531",
   "description": "A local dashboard plugin for structured LLM memory visibility and lightweight governance.",
   "author": {
     "name": "Pensieve Project"

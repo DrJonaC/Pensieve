@@ -61,3 +61,33 @@ test("mock host adapter records plugin events and mirrors expanded changes into 
   assert.equal(state.width, 672);
 });
 
+test("mock host adapter caps recorded events while continuing host-side effects", async () => {
+  const adapter = createMockPensieveHostAdapter({ maxEvents: 1 });
+
+  await adapter.emit({
+    type: "plugin.panel.ready",
+    source: "plugin",
+    payload: {
+      context: await adapter.getContext(),
+      state: await adapter.getHostState()
+    },
+    timestamp: new Date().toISOString()
+  });
+
+  await adapter.emit({
+    type: "plugin.expanded.changed",
+    source: "plugin",
+    payload: {
+      expanded: true
+    },
+    timestamp: new Date().toISOString()
+  });
+
+  const state = await adapter.getHostState();
+
+  assert.equal(adapter.getEventCount(), 1);
+  assert.equal(adapter.isCaptureLimitReached(), true);
+  assert.equal(state.expanded, true);
+  assert.equal(state.width, 672);
+});
+

@@ -6,6 +6,7 @@ import {
   type DashboardMemoryStatus
 } from "./pensieve-dashboard-core.ts";
 import { type PersistedMemoryRecord } from "./memory-store.ts";
+import { type GovernanceReport } from "./pensieve-governance-bridge.ts";
 
 export function mapPersistedStatus(status: PersistedMemoryRecord["status"]): DashboardMemoryStatus {
   if (status === "forgotten") {
@@ -124,5 +125,37 @@ export function applyDashboardActionToRecords(
     },
     records: nextRecords
   };
+}
+
+export function applyGovernanceReportToRecords(
+  records: readonly PersistedMemoryRecord[],
+  report: GovernanceReport
+): PersistedMemoryRecord[] {
+  const changedIds = new Set(report.changes.map((change) => change.memory_id));
+  const targets = new Map(
+    report.resulting_state
+      .filter((state) => changedIds.has(state.memory_id))
+      .map((state) => [state.memory_id, state])
+  );
+  const updatedAt = new Date().toISOString();
+
+  return records.map((record) => {
+    const target = targets.get(record.id);
+
+    if (!target) {
+      return { ...record, keywords: [...record.keywords] };
+    }
+
+    const status = mapDashboardStatus(target.status);
+    const changed = record.pinned !== target.pinned || record.status !== status;
+
+    return {
+      ...record,
+      pinned: target.pinned,
+      status,
+      updated_at: changed ? updatedAt : record.updated_at,
+      keywords: [...record.keywords]
+    };
+  });
 }
 

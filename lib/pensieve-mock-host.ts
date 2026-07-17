@@ -9,11 +9,14 @@ import {
 type MockHostOptions = {
   context?: Partial<PensieveHostContext>;
   state?: Partial<PensieveHostState>;
+  maxEvents?: number;
 };
 
 export interface MockPensieveHostAdapter extends PensieveHostAdapter {
   clearEvents(): void;
+  getEventCount(): number;
   getEvents(): PensieveHostEvent[];
+  isCaptureLimitReached(): boolean;
   setContext(context: Partial<PensieveHostContext>): void;
   setHostState(state: Partial<PensieveHostState>): void;
   setVisible(visible: boolean): void;
@@ -42,6 +45,7 @@ function createDefaultState(): PensieveHostState {
 export function createMockPensieveHostAdapter(
   options: MockHostOptions = {}
 ): MockPensieveHostAdapter {
+  const maxEvents = options.maxEvents ?? 1024;
   let context: PensieveHostContext = {
     ...createDefaultContext(),
     ...options.context
@@ -61,6 +65,9 @@ export function createMockPensieveHostAdapter(
     clearEvents() {
       events.length = 0;
     },
+    getEventCount() {
+      return events.length;
+    },
     getContext() {
       return context;
     },
@@ -70,8 +77,14 @@ export function createMockPensieveHostAdapter(
     getHostState() {
       return state;
     },
+    isCaptureLimitReached() {
+      return events.length >= maxEvents;
+    },
     emit(event) {
-      events.push(event);
+      if (events.length < maxEvents) {
+        events.push(event);
+      }
+
       dispatch(event);
 
       if (event.type === "plugin.expanded.changed") {

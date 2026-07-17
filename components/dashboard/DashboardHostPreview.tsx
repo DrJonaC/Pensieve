@@ -2,6 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { DashboardHostShell } from "@/components/dashboard/DashboardHostShell";
+import {
+  HOST_CAPTURE_LIMIT,
+  shouldRefreshCaptureDisplay
+} from "@/lib/pensieve-host-preview";
 import { createMockPensieveHostAdapter } from "@/lib/pensieve-mock-host";
 
 export function DashboardHostPreview() {
@@ -13,14 +17,18 @@ export function DashboardHostPreview() {
 
   useEffect(() => {
     const unsubscribe = hostAdapter.subscribe(() => {
-      setEventCount(hostAdapter.getEvents().length);
+      const nextCount = hostAdapter.getEventCount();
+
+      if (shouldRefreshCaptureDisplay(nextCount) || hostAdapter.isCaptureLimitReached()) {
+        setEventCount(nextCount);
+      }
     });
 
     return unsubscribe;
   }, [hostAdapter]);
 
   const refreshEventCount = () => {
-    setEventCount(hostAdapter.getEvents().length);
+    setEventCount(hostAdapter.getEventCount());
   };
 
   return (
@@ -35,8 +43,16 @@ export function DashboardHostPreview() {
               coupling Pensieve to any specific runtime.
             </p>
           </div>
-          <span className="dashboard-status-pill">{eventCount} events captured</span>
+          <span className="dashboard-status-pill">
+            {hostAdapter.isCaptureLimitReached() ? "Capture limit reached" : "Capturing"}
+          </span>
         </div>
+
+        <p className="dashboard-meta-note mt-3">
+          {hostAdapter.isCaptureLimitReached()
+            ? `${eventCount} events buffered. Capture stops automatically at ${HOST_CAPTURE_LIMIT}.`
+            : `${eventCount} events buffered. Display refreshes every 500 captured events.`}
+        </p>
 
         <div className="mt-4 flex flex-wrap gap-2.5">
           <button

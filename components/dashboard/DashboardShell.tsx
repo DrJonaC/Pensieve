@@ -1,6 +1,7 @@
 "use client";
 
-import { startTransition, useEffect, useMemo, useState } from "react";
+import { startTransition, useCallback, useEffect, useMemo, useState } from "react";
+import { GovernanceBridgePanel } from "@/components/dashboard/GovernanceBridgePanel";
 import { KeywordThemePanel } from "@/components/dashboard/KeywordThemePanel";
 import { MemoryListPanel } from "@/components/dashboard/MemoryListPanel";
 import { SnapshotCard } from "@/components/dashboard/SnapshotCard";
@@ -18,6 +19,11 @@ import {
   type DashboardState,
   type MemoryProvider
 } from "@/lib/pensieve-dashboard-core";
+import {
+  type GovernanceBridgeStatus,
+  type GovernanceReceipt,
+  type GovernanceReportArtifact
+} from "@/lib/pensieve-governance-bridge";
 
 type DashboardShellProps = {
   expanded?: boolean;
@@ -50,7 +56,25 @@ export function DashboardShell({
   const [error, setError] = useState<string | null>(null);
   const [pendingActionId, setPendingActionId] = useState<string | null>(null);
   const [selectedMemoryId, setSelectedMemoryId] = useState<string | null>(null);
+  const [governanceStatus, setGovernanceStatus] = useState<GovernanceBridgeStatus | null>(null);
+  const [governanceArtifact, setGovernanceArtifact] = useState<GovernanceReportArtifact | null>(null);
+  const [governanceReceipt, setGovernanceReceipt] = useState<GovernanceReceipt | null>(null);
+  const [governanceError, setGovernanceError] = useState<string | null>(null);
+  const [isGovernanceBusy, setIsGovernanceBusy] = useState(false);
   const shellMode = getDashboardShellMode(isExpanded);
+
+  const refreshGovernanceStatus = useCallback(async () => {
+    if (!stableProvider.getGovernanceStatus) {
+      return;
+    }
+
+    try {
+      setGovernanceStatus(await stableProvider.getGovernanceStatus());
+      setGovernanceError(null);
+    } catch (reason) {
+      setGovernanceError(reason instanceof Error ? reason.message : "Failed to read governance status.");
+    }
+  }, [stableProvider]);
 
   useEffect(() => {
     if (expanded === undefined) {
@@ -97,6 +121,10 @@ export function DashboardShell({
     };
   }, [onReady, onShellError, stableProvider]);
 
+  useEffect(() => {
+    void refreshGovernanceStatus();
+  }, [refreshGovernanceStatus]);
+
   const runAction = (action: DashboardAction) => {
     setPendingActionId(action.memory_id);
     setError(null);
@@ -106,6 +134,7 @@ export function DashboardShell({
         .then((nextState) => {
           setState(nextState);
           onActionComplete?.(action);
+          void refreshGovernanceStatus();
 
           if (nextState.derived.visible_memories.length === 0) {
             setSelectedMemoryId(null);
@@ -130,6 +159,45 @@ export function DashboardShell({
           setPendingActionId(null);
         });
     });
+  };
+
+  const generateGovernanceReport = async () => {
+    if (!stableProvider.generateGovernanceReport) {
+      return;
+    }
+
+    setIsGovernanceBusy(true);
+    setGovernanceError(null);
+
+    try {
+      const artifact = await stableProvider.generateGovernanceReport();
+      setGovernanceArtifact(artifact);
+      setGovernanceReceipt(null);
+      await refreshGovernanceStatus();
+    } catch (reason) {
+      setGovernanceError(reason instanceof Error ? reason.message : "Failed to generate governance report.");
+    } finally {
+      setIsGovernanceBusy(false);
+    }
+  };
+
+  const applyGovernanceReport = async (reportId: string) => {
+    if (!stableProvider.applyGovernanceReport) {
+      return;
+    }
+
+    setIsGovernanceBusy(true);
+    setGovernanceError(null);
+
+    try {
+      const receipt = await stableProvider.applyGovernanceReport(reportId);
+      setGovernanceReceipt(receipt);
+      await refreshGovernanceStatus();
+    } catch (reason) {
+      setGovernanceError(reason instanceof Error ? reason.message : "Failed to apply governance report.");
+    } finally {
+      setIsGovernanceBusy(false);
+    }
   };
 
   return (
@@ -183,6 +251,17 @@ export function DashboardShell({
       {!isLoading && !error && state ? (
         <div className="mt-4 space-y-4">
           <SnapshotCard snapshot={state.snapshot} compact={!isExpanded} />
+          {stableProvider.getGovernanceStatus && stableProvider.generateGovernanceReport && stableProvider.applyGovernanceReport ? (
+            <GovernanceBridgePanel
+              status={governanceStatus}
+              artifact={governanceArtifact}
+              receipt={governanceReceipt}
+              error={governanceError}
+              isBusy={isGovernanceBusy}
+              onGenerate={() => void generateGovernanceReport()}
+              onApply={(reportId) => void applyGovernanceReport(reportId)}
+            />
+          ) : null}
           <KeywordThemePanel
             keywords={state.derived.top_keywords.slice(0, shellMode.keywordsLimit)}
             themes={state.derived.surfaced_themes}

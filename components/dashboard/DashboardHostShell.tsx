@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import {
+  type DashboardAction,
+  type DashboardState,
   type MemoryProvider
 } from "@/lib/pensieve-dashboard-core";
 import {
@@ -41,6 +43,16 @@ export function DashboardHostShell({
   const [hostState, setHostState] = useState<PensieveHostState>(fallbackHostState);
   const [isBooting, setIsBooting] = useState(true);
   const [hostError, setHostError] = useState<string | null>(null);
+  const contextRef = useRef<PensieveHostContext | null>(null);
+  const hostStateRef = useRef<PensieveHostState>(fallbackHostState);
+
+  useEffect(() => {
+    contextRef.current = context;
+  }, [context]);
+
+  useEffect(() => {
+    hostStateRef.current = hostState;
+  }, [hostState]);
 
   useEffect(() => {
     let isActive = true;
@@ -101,6 +113,70 @@ export function DashboardHostShell({
     };
   }, [stableHostAdapter]);
 
+  const handleActionComplete = useCallback(
+    (action: DashboardAction) =>
+      stableHostAdapter.emit({
+        type: "plugin.memory.action",
+        source: "plugin",
+        payload: { action },
+        timestamp: new Date().toISOString()
+      }),
+    [stableHostAdapter]
+  );
+
+  const handleExpandedChange = useCallback(
+    (expanded: boolean) =>
+      stableHostAdapter.emit({
+        type: "plugin.expanded.changed",
+        source: "plugin",
+        payload: { expanded },
+        timestamp: new Date().toISOString()
+      }),
+    [stableHostAdapter]
+  );
+
+  const handleMemorySelect = useCallback(
+    (memoryId: string | null) =>
+      stableHostAdapter.emit({
+        type: "plugin.memory.selected",
+        source: "plugin",
+        payload: { memory_id: memoryId },
+        timestamp: new Date().toISOString()
+      }),
+    [stableHostAdapter]
+  );
+
+  const handleReady = useCallback(
+    (state: DashboardState) =>
+      stableHostAdapter.emit({
+        type: "plugin.panel.ready",
+        source: "plugin",
+        payload: {
+          context: contextRef.current ?? {
+            host_name: "unknown-host",
+            session_id: "unknown-session",
+            workspace_id: "unknown-workspace",
+            query_mode: "query-free",
+            timestamp: new Date().toISOString()
+          },
+          state: hostStateRef.current
+        },
+        timestamp: new Date().toISOString()
+      }),
+    [stableHostAdapter]
+  );
+
+  const handleShellError = useCallback(
+    (message: string) =>
+      stableHostAdapter.emit({
+        type: "plugin.error",
+        source: "plugin",
+        payload: { message },
+        timestamp: new Date().toISOString()
+      }),
+    [stableHostAdapter]
+  );
+
   if (isBooting) {
     return (
       <div className="dashboard-panel rounded-[1.45rem] p-5">
@@ -139,49 +215,11 @@ export function DashboardHostShell({
         provider={stableProvider}
         expanded={hostState.expanded}
         hostLabel={context.host_name}
-        onActionComplete={(action) =>
-          stableHostAdapter.emit({
-            type: "plugin.memory.action",
-            source: "plugin",
-            payload: { action },
-            timestamp: new Date().toISOString()
-          })
-        }
-        onExpandedChange={(expanded) =>
-          stableHostAdapter.emit({
-            type: "plugin.expanded.changed",
-            source: "plugin",
-            payload: { expanded },
-            timestamp: new Date().toISOString()
-          })
-        }
-        onMemorySelect={(memoryId) =>
-          stableHostAdapter.emit({
-            type: "plugin.memory.selected",
-            source: "plugin",
-            payload: { memory_id: memoryId },
-            timestamp: new Date().toISOString()
-          })
-        }
-        onReady={() =>
-          stableHostAdapter.emit({
-            type: "plugin.panel.ready",
-            source: "plugin",
-            payload: {
-              context,
-              state: hostState
-            },
-            timestamp: new Date().toISOString()
-          })
-        }
-        onShellError={(message) =>
-          stableHostAdapter.emit({
-            type: "plugin.error",
-            source: "plugin",
-            payload: { message },
-            timestamp: new Date().toISOString()
-          })
-        }
+        onActionComplete={handleActionComplete}
+        onExpandedChange={handleExpandedChange}
+        onMemorySelect={handleMemorySelect}
+        onReady={handleReady}
+        onShellError={handleShellError}
       />
     </div>
   );

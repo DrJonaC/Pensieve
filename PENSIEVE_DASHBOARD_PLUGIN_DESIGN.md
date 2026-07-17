@@ -88,6 +88,16 @@ v1 should support these actions:
 - `hide`
 - `restore`
 
+The next governance layer adds a **Governance Bridge**:
+
+- compare current governed state with the last exported state
+- generate a human-readable Markdown report
+- generate a machine-readable JSON manifest
+- apply the desired state through a provider adapter
+- return an itemized receipt and verify the resulting state
+
+The Markdown report is an auditable exchange artifact, not a model-weight update. A host adapter must consume the manifest and write the governed state back to its real memory store.
+
 v1 will **not** prioritize:
 
 - query panel
@@ -144,6 +154,14 @@ The provider protocol should be small and stable.
 ### Optional future capability
 
 - `getActivationForQuery?(query)`
+
+### Governance bridge capabilities
+
+- `getGovernanceStatus?()`
+- `generateGovernanceReport?()`
+- `applyGovernanceReport?(reportId)`
+
+These methods remain optional so read-only and legacy providers stay compatible.
 
 Rationale:
 

@@ -1,3 +1,9 @@
+import {
+  type GovernanceBridgeStatus,
+  type GovernanceReceipt,
+  type GovernanceReportArtifact
+} from "./pensieve-governance-bridge.ts";
+
 export type DashboardRiskLevel = "low" | "medium" | "high";
 export type DashboardMemoryStatus = "active" | "softened" | "hidden";
 export type DashboardInfoType =
@@ -89,6 +95,9 @@ export interface MemoryProvider {
   getMemories(): Promise<DashboardMemoryRecord[]> | DashboardMemoryRecord[];
   applyAction(action: DashboardAction): Promise<DashboardActionResult> | DashboardActionResult;
   getActivationForQuery?(query: string): Promise<DashboardActivationRecord> | DashboardActivationRecord;
+  getGovernanceStatus?(): Promise<GovernanceBridgeStatus>;
+  generateGovernanceReport?(): Promise<GovernanceReportArtifact>;
+  applyGovernanceReport?(reportId: string): Promise<GovernanceReceipt>;
 }
 
 function clampWeight(weight: number): number {
