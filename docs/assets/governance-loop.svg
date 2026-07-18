@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
+  <title id="title">Pensieve governance loop</title>
+  <desc id="desc">A six-step loop from memory observation through user governance, report generation, provider application, and verification.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7f8f5"/>
+      <stop offset="1" stop-color="#e8efec"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#86a49c"/>
+      <stop offset="1" stop-color="#8fb2b5"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#6f8881" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#78958e"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="420" rx="32" fill="url(#bg)"/>
+  <path d="M115 210 C185 78 356 62 448 142 C520 204 486 306 600 322 C714 338 680 204 752 142 C844 62 1015 78 1085 210" fill="none" stroke="#c5d5d0" stroke-width="2" stroke-dasharray="5 9"/>
+  <path d="M1085 210 C1015 342 844 358 752 278 C680 216 714 114 600 98 C486 82 520 216 448 278 C356 358 185 342 115 210" fill="none" stroke="#d5e1dd" stroke-width="2"/>
+
+  <g font-family="Segoe UI, Arial, sans-serif" text-anchor="middle">
+    <g transform="translate(105 165)" filter="url(#shadow)">
+      <rect width="170" height="90" rx="20" fill="#ffffff" fill-opacity="0.9" stroke="#b9cbc6"/>
+      <text x="85" y="36" font-size="13" letter-spacing="2" fill="#69867f">OBSERVE</text>
+      <text x="85" y="62" font-size="17" font-weight="600" fill="#243c37">Memory field</text>
+    </g>
+    <path d="M275 210H330" stroke="#78958e" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(340 165)" filter="url(#shadow)">
+      <rect width="170" height="90" rx="20" fill="#ffffff" fill-opacity="0.9" stroke="#b9cbc6"/>
+      <text x="85" y="36" font-size="13" letter-spacing="2" fill="#69867f">DECIDE</text>
+      <text x="85" y="62" font-size="17" font-weight="600" fill="#243c37">User governance</text>
+    </g>
+    <path d="M510 210H565" stroke="#78958e" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(575 140)" filter="url(#shadow)">
+      <rect width="190" height="140" rx="24" fill="url(#accent)"/>
+      <text x="95" y="42" font-size="13" letter-spacing="2" fill="#f4faf8">COMPILE</text>
+      <text x="95" y="73" font-size="19" font-weight="600" fill="#ffffff">Governance Bridge</text>
+      <text x="95" y="101" font-size="14" fill="#edf6f3">Markdown + JSON</text>
+    </g>
+    <path d="M765 210H820" stroke="#78958e" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(830 165)" filter="url(#shadow)">
+      <rect width="170" height="90" rx="20" fill="#ffffff" fill-opacity="0.9" stroke="#b9cbc6"/>
+      <text x="85" y="36" font-size="13" letter-spacing="2" fill="#69867f">APPLY</text>
+      <text x="85" y="62" font-size="17" font-weight="600" fill="#243c37">Memory provider</text>
+    </g>
+    <path d="M1000 210H1035" stroke="#78958e" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(1045 165)" filter="url(#shadow)">
+      <rect width="120" height="90" rx="20" fill="#ffffff" fill-opacity="0.9" stroke="#b9cbc6"/>
+      <text x="60" y="36" font-size="13" letter-spacing="2" fill="#69867f">VERIFY</text>
+      <text x="60" y="62" font-size="17" font-weight="600" fill="#243c37">Receipt</text>
+    </g>
+  </g>
+  <text x="600" y="382" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#71847f">Reversible state, deterministic application, auditable verification</text>
+</svg>
