@@ -27,8 +27,6 @@ Pensieve 不修改模型权重。它治理的是影响未来上下文的外部�
 
 ## 产品全貌
 
-![Pensieve 展开模式 Dashboard，展示 Snapshot、Governance Bridge、Priority、Themes 与 Memory Controls](./docs/assets/dashboard-overview.png)
-
 | 层级 | Pensieve 展示的内容 |
 | --- | --- |
 | **Snapshot** | 记忆总数，以及 active、pinned、softened、hidden、高风险数量 |

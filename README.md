@@ -27,8 +27,6 @@ Pensieve does not modify model weights. It governs the external memory records a
 
 ## Product At A Glance
 
-![Pensieve expanded dashboard showing snapshot, governance bridge, priority, themes, and memory controls](./docs/assets/dashboard-overview.png)
-
 | Layer | What Pensieve exposes |
 | --- | --- |
 | **Snapshot** | Total, active, pinned, softened, hidden, and high-risk memory counts |
