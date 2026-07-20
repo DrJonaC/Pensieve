@@ -1,10 +1,12 @@
 node_modules/
 .next/
+dist/
 .env.local
 .env
 npm-debug.log*
 .claude/
 tsconfig.tsbuildinfo
 data/pensieve-governance/
+codex-marketplace/plugins/
 .claude/
 tsconfig.tsbuildinfo

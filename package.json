@@ -7,7 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "package:plugin": "node ./scripts/package-codex-plugin.mjs",
+    "test:package": "node --test ./scripts/package-codex-plugin.test.mjs"
   },
   "dependencies": {
     "next": "15.3.1",

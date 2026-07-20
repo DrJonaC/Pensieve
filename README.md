@@ -130,7 +130,7 @@ data/pensieve-governance/
 ### Install as a Codex plugin
 
 ```bash
-codex plugin add pensieve-dashboard-plugin@personal
+codex plugin add pensieve-dashboard-plugin@pensieve-local
 ```
 
 The local marketplace and Windows setup are documented in [CODEX_PLUGIN_INSTALL.md](./CODEX_PLUGIN_INSTALL.md). Start a new Codex task after reinstalling so the updated plugin metadata is loaded.

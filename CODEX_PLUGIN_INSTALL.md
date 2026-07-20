@@ -1,85 +1,62 @@
-﻿# Pensieve Codex Plugin Install Guide
+# Pensieve Codex Plugin Install Guide
 
-This repository can be installed as a local Codex plugin source.
+This repository can now install the Pensieve plugin through a repo-local Codex
+marketplace.
 
 ## Install Flow
 
-1. Place the repository in your local plugins directory.
-2. Add a marketplace entry that points to `./plugins/pensieve-dashboard-plugin`.
-3. Install with `codex plugin add pensieve-dashboard-plugin@personal`.
+1. Package the plugin source with `npm run package:plugin`.
+2. Register the repo-local marketplace with Codex.
+3. Install `pensieve-dashboard-plugin@pensieve-local`.
 4. Start a new Codex thread before testing.
 
-## Recommended Plugin Source Path
+## Packaging A Release Folder
 
-Windows:
+Run:
 
-`%USERPROFILE%\plugins\pensieve-dashboard-plugin`
-
-macOS or Linux:
-
-`~/plugins/pensieve-dashboard-plugin`
-
-The plugin source directory should contain:
-
-- `.codex-plugin/plugin.json`
-- `app/`
-- `components/`
-- `lib/`
-- `data/`
-- `package.json`
-
-## Personal Marketplace Entry
-
-Edit or create:
-
-`%USERPROFILE%\.agents\plugins\marketplace.json`
-
-Add this entry to the `plugins` array:
-
-```json
-{
-  "name": "pensieve-dashboard-plugin",
-  "source": {
-    "source": "local",
-    "path": "./plugins/pensieve-dashboard-plugin"
-  },
-  "policy": {
-    "installation": "AVAILABLE",
-    "authentication": "ON_INSTALL"
-  },
-  "category": "Productivity"
-}
+```bash
+npm run package:plugin
 ```
 
-If you are creating the marketplace file from scratch, use:
+This refreshes both of these paths:
 
-```json
-{
-  "name": "personal",
-  "interface": {
-    "displayName": "Personal"
-  },
-  "plugins": [
-    {
-      "name": "pensieve-dashboard-plugin",
-      "source": {
-        "source": "local",
-        "path": "./plugins/pensieve-dashboard-plugin"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "Productivity"
-    }
-  ]
-}
+```text
+dist/pensieve-dashboard-plugin
+codex-marketplace/plugins/pensieve-dashboard-plugin
+```
+
+The packaged output includes a generated:
+
+```text
+PLUGIN_PACKAGE_MANIFEST.json
+```
+
+which records the packaged paths and build timestamp.
+
+## Repo-Local Marketplace
+
+The local marketplace definition lives at:
+
+```text
+codex-marketplace/marketplace.json
+```
+
+Register it with Codex:
+
+```bash
+codex plugin marketplace add "D:\[]CJNCore\[02]Work\[02]Project\[03] Pensieve\codex-marketplace"
+```
+
+This exposes the marketplace name:
+
+```text
+pensieve-local
 ```
 
 ## Install Command
 
 ```bash
-codex plugin add pensieve-dashboard-plugin@personal
+codex plugin add pensieve-dashboard-plugin@pensieve-local
 ```
 
 ## Local Persistence
@@ -96,12 +73,7 @@ The dashboard updates this repository through:
 
 When you update the local plugin source:
 
-1. keep the same plugin folder path
+1. keep the same repository path
 2. update the plugin manifest version or Codex cachebuster if needed
-3. reinstall with:
-
-```bash
-codex plugin add pensieve-dashboard-plugin@personal
-```
-
+3. re-run `npm run package:plugin`
 4. start a new Codex thread before testing again

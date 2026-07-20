@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "marketplaces": [
+    {
+      "name": "pensieve-local",
+      "plugins": [
+        {
+          "name": "pensieve-dashboard-plugin",
+          "path": "./plugins/pensieve-dashboard-plugin"
+        }
+      ]
+    }
+  ]
+}

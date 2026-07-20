@@ -3,8 +3,11 @@
   "version": "0.1.0+codex.20260717175531",
   "description": "A local dashboard plugin for structured LLM memory visibility and lightweight governance.",
   "author": {
-    "name": "Pensieve Project"
+    "name": "Pensieve Project",
+    "url": "https://github.com/DrJonaC/Pensieve"
   },
+  "homepage": "https://github.com/DrJonaC/Pensieve",
+  "repository": "https://github.com/DrJonaC/Pensieve",
   "license": "MIT",
   "keywords": [
     "memory",
@@ -30,6 +33,7 @@
       "Inspect the local memory dashboard and highlight high-risk traces.",
       "Review the current memory field and soften anything too persistent."
     ],
-    "brandColor": "#7A9890"
+    "brandColor": "#7A9890",
+    "websiteURL": "https://github.com/DrJonaC/Pensieve"
   }
 }

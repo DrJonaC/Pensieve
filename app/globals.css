@@ -60,9 +60,91 @@ a {
   justify-items: start;
 }
 
+.plugin-layout--sidebar {
+  width: 100%;
+  max-width: 29rem;
+  margin-inline: auto;
+  transition: max-width 220ms ease;
+}
+
+.plugin-layout--sidebar-collapsed {
+  max-width: 28rem;
+}
+
+.plugin-layout--sidebar-expanded {
+  max-width: 42rem;
+}
+
 .plugin-meta {
   max-width: 34rem;
   padding: 0.35rem 0.15rem;
+}
+
+.plugin-meta--sidebar {
+  max-width: 28rem;
+}
+
+.plugin-meta__title--sidebar {
+  font-size: clamp(1.6rem, 4vw, 2rem);
+}
+
+.plugin-meta__copy--sidebar {
+  max-width: 24rem;
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.plugin-host-copy {
+  margin: 0.55rem 0 0;
+  max-width: 24rem;
+  font-size: 0.76rem;
+  line-height: 1.6;
+  color: rgb(103, 118, 113);
+}
+
+.plugin-header-shell {
+  width: 100%;
+}
+
+.plugin-header-shell__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.plugin-header-shell__badge {
+  flex-shrink: 0;
+}
+
+.plugin-status-rail {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.plugin-capability-row {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.plugin-status-rail__item {
+  border: 1px solid rgba(122, 150, 144, 0.18);
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 1rem;
+  padding: 0.8rem 0.9rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62);
+}
+
+.plugin-status-rail__value {
+  margin: 0.45rem 0 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgb(32, 48, 45);
 }
 
 .plugin-meta__eyebrow {
@@ -143,6 +225,16 @@ a {
 
 .dashboard-shell--expanded {
   max-width: 42rem;
+}
+
+.plugin-sidebar-shell {
+  width: 100%;
+  display: grid;
+  gap: 1rem;
+}
+
+.plugin-sidebar-status {
+  width: 100%;
 }
 
 .dashboard-panel {
@@ -344,6 +436,18 @@ a {
 }
 
 @media (min-width: 768px) {
+  .plugin-layout--sidebar {
+    max-width: 30rem;
+  }
+
+  .plugin-layout--sidebar-expanded {
+    max-width: 46rem;
+  }
+
+  .plugin-status-rail {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
   .plugin-preview-stage__host {
     justify-content: flex-start;
     padding: 2.25rem;

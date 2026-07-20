@@ -1,4 +1,4 @@
-﻿# Pensieve Plugin Release Notes
+# Pensieve Plugin Release Notes
 
 ## Current Release Shape
 
@@ -21,7 +21,8 @@ This release is suitable for:
 
 - local Codex plugin development
 - GitHub distribution as a plugin source repository
-- local installation through a personal Codex marketplace
+- GitHub distribution as a packaged local plugin folder via `dist/pensieve-dashboard-plugin`
+- local installation through the repo-local Codex marketplace at `codex-marketplace/marketplace.json`
 - mock-host validation of the Pensieve sidebar experience
 
 ## What This Release Does Not Yet Include
@@ -30,8 +31,7 @@ This release does not yet include:
 
 - a Codex-native production sidebar host binding
 - a Claude Code-specific host adapter
-- automatic marketplace generation
-- release asset bundling
+- binary release asset bundling beyond the local packaging script
 - host-authenticated remote memory storage
 
 ## Required Runtime Assumptions
@@ -49,8 +49,9 @@ Before publishing this repository as a plugin source:
 1. confirm `.codex-plugin/plugin.json` is current
 2. confirm `data/pensieve-memory-records.json` contains safe seed data only
 3. confirm install instructions in `CODEX_PLUGIN_INSTALL.md` still match the repo layout
-4. run type-checking and focused local tests
-5. publish the repository or tag the GitHub release
+4. run `npm run package:plugin`
+5. run type-checking and focused local tests
+6. publish the repository or tag the GitHub release
 
 ## Recommended Publish Story
 

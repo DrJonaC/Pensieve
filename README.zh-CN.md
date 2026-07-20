@@ -130,7 +130,7 @@ data/pensieve-governance/
 ### 安装为 Codex 插件
 
 ```bash
-codex plugin add pensieve-dashboard-plugin@personal
+codex plugin add pensieve-dashboard-plugin@pensieve-local
 ```
 
 本地 Marketplace 与 Windows 配置步骤见 [CODEX_PLUGIN_INSTALL.md](./CODEX_PLUGIN_INSTALL.md)。重新安装后需要创建一个新的 Codex 任务，以加载更新后的插件元数据。
