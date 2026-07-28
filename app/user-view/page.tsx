@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
+import { UserViewPanel } from "@/components/UserViewPanel";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default function UserViewPage() {
-  redirect("/dashboard");
+  return <UserViewPanel />;
 }

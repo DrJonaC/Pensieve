@@ -8,8 +8,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-test-isolation=none ./lib/memory-rag.test.ts ./lib/memory-store.test.ts ./lib/memory-state.test.ts ./lib/pensieve-query-runtime.test.ts ./lib/pensieve-query-view.test.ts ./lib/pensieve-dashboard-core.test.ts ./lib/plugin-derive.test.ts ./lib/pensieve-records.test.ts ./lib/pensieve-governance-bridge.test.ts ./lib/pensieve-memory-presenter.test.ts ./lib/pensieve-memory-item-presenter.test.ts ./lib/pensieve-query-lifecycle.test.ts ./lib/pensieve-priority-portrait.test.ts ./lib/pensieve-request-trace.test.ts",
     "package:plugin": "node ./scripts/package-codex-plugin.mjs",
-    "test:package": "node --test ./scripts/package-codex-plugin.test.mjs"
+    "test:package": "node --test ./scripts/package-codex-plugin.test.mjs",
+    "ci:check": "npm run typecheck && npm run test"
   },
   "dependencies": {
     "next": "15.3.1",

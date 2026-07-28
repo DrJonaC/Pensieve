@@ -1,4 +1,4 @@
-import { type MemoryUnit } from "@/lib/memory";
+import { type MemoryUnit } from "./memory.ts";
 
 export type TPLevel = "public" | "consent-required" | "reciprocity" | "confidentiality";
 export type ContextCategory = "preference" | "medical" | "financial" | "unknown";

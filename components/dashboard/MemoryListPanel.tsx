@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { MemoryActionBar } from "@/components/dashboard/MemoryActionBar";
 import { type DashboardMemoryRecord } from "@/lib/pensieve-dashboard-core";
+import { presentDashboardMemoryItem } from "@/lib/pensieve-memory-item-presenter";
 import { getGovernedMemoryDisplay } from "@/lib/pensieve-governance";
 
 type MemoryListPanelProps = {
@@ -22,14 +23,6 @@ const riskClasses: Record<DashboardMemoryRecord["risk_level"], string> = {
   medium: "bg-[rgba(166,179,160,0.24)] text-[rgb(98,108,92)]",
   high: "bg-[rgba(182,150,145,0.25)] text-[rgb(116,79,74)]"
 };
-
-function compactDate(isoTime: string): string {
-  return new Date(isoTime).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric"
-  });
-}
-
 export function MemoryListPanel({
   memories,
   expanded,
@@ -74,6 +67,7 @@ export function MemoryListPanel({
           const isPending = pendingActionId === memory.id;
           const isHidden = memory.status === "hidden";
           const governed = getGovernedMemoryDisplay(memory);
+          const presented = presentDashboardMemoryItem(memory, governed);
           const isHideConfirming = hideIntentId === memory.id;
 
           return (
@@ -94,12 +88,12 @@ export function MemoryListPanel({
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="dashboard-meta-note">
-                        {memory.status}
+                        {presented.statusLabel}
                       </span>
                       <span className="rounded-full bg-[rgba(201,214,210,0.7)] px-2 py-0.5 text-[11px] text-[rgb(79,102,97)]">
-                        {governed.tier_label}
+                        {presented.governanceTierLabel}
                       </span>
-                      {memory.pinned ? (
+                      {presented.pinned ? (
                         <span className="rounded-full bg-[rgba(118,161,153,0.18)] px-2 py-0.5 text-[11px] text-[rgb(73,109,102)]">
                           pinned
                         </span>
@@ -110,14 +104,14 @@ export function MemoryListPanel({
                         expanded ? "text-[1.02rem] font-semibold tracking-[-0.01em]" : "text-sm font-medium"
                       }`}
                     >
-                      {governed.content}
+                      {presented.title}
                     </h4>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <span className={`rounded-full px-2.5 py-1 text-[11px] ${riskClasses[memory.risk_level]}`}>
-                      {memory.risk_level}
+                      {presented.riskLabel}
                     </span>
-                    <span className="dashboard-meta-note">{Math.round(memory.priority_score * 100)}%</span>
+                    <span className="dashboard-meta-note">{presented.scorePercent}%</span>
                   </div>
                 </div>
               </button>
@@ -131,12 +125,12 @@ export function MemoryListPanel({
                   <div className="h-1.5 rounded-full bg-[rgba(128,146,141,0.18)]">
                     <div
                       className="h-1.5 rounded-full bg-gradient-to-r from-[rgb(127,164,154)] to-[rgb(141,176,170)]"
-                      style={{ width: `${Math.max(memory.priority_score * 100, 8)}%` }}
+                      style={{ width: `${presented.progressPercent}%` }}
                     />
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    {governed.keywords.slice(0, 6).map((keyword) => (
+                    {presented.keywords.slice(0, 6).map((keyword) => (
                       <span key={`${memory.id}-${keyword}`} className="dashboard-chip">
                         {keyword}
                       </span>
@@ -146,19 +140,19 @@ export function MemoryListPanel({
                   <div className="grid gap-2 text-[12px] text-slate-600 sm:grid-cols-2 lg:grid-cols-4">
                     <div className="rounded-[0.95rem] bg-white/75 px-3 py-2">
                       <p className="dashboard-meta-note">Activated</p>
-                      <p className="mt-1 text-sm text-slate-900">{compactDate(memory.last_activated)}</p>
+                      <p className="mt-1 text-sm text-slate-900">{presented.lastActivatedLabel}</p>
                     </div>
                     <div className="rounded-[0.95rem] bg-white/75 px-3 py-2">
                       <p className="dashboard-meta-note">Count</p>
-                      <p className="mt-1 text-sm text-slate-900">{memory.activation_count}</p>
+                      <p className="mt-1 text-sm text-slate-900">{presented.activationCount}</p>
                     </div>
                     <div className="rounded-[0.95rem] bg-white/75 px-3 py-2">
                       <p className="dashboard-meta-note">Type</p>
-                      <p className="mt-1 text-sm capitalize text-slate-900">{memory.info_type ?? "general"}</p>
+                      <p className="mt-1 text-sm capitalize text-slate-900">{presented.infoTypeLabel}</p>
                     </div>
                     <div className="rounded-[0.95rem] bg-white/75 px-3 py-2">
                       <p className="dashboard-meta-note">Source</p>
-                      <p className="mt-1 text-sm capitalize text-slate-900">{governed.source_label}</p>
+                      <p className="mt-1 text-sm capitalize text-slate-900">{presented.sourceLabel}</p>
                     </div>
                   </div>
 

@@ -1,4 +1,4 @@
-import { ActivationResult, ScoredMemory } from "@/lib/memory";
+import type { ActivationResult, ScoredMemory } from "./memory.ts";
 
 export type PensieveMode = "mock" | "live";
 

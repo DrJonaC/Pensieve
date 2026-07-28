@@ -3,6 +3,8 @@ import {
   type GovernanceReceipt,
   type GovernanceReportArtifact
 } from "./pensieve-governance-bridge.ts";
+import { deriveMemoryPrioritySignals } from "./pensieve-memory-presenter.ts";
+import type { StructuredMemoryRecord } from "./plugin-types.ts";
 
 export type DashboardRiskLevel = "low" | "medium" | "high";
 export type DashboardMemoryStatus = "active" | "softened" | "hidden";
@@ -100,10 +102,6 @@ export interface MemoryProvider {
   applyGovernanceReport?(reportId: string): Promise<GovernanceReceipt>;
 }
 
-function clampWeight(weight: number): number {
-  return Math.max(0, Number(weight.toFixed(3)));
-}
-
 function sortMemories(memories: readonly DashboardMemoryRecord[]): DashboardMemoryRecord[] {
   return [...memories].sort((left, right) => {
     if (left.pinned !== right.pinned) {
@@ -114,57 +112,43 @@ function sortMemories(memories: readonly DashboardMemoryRecord[]): DashboardMemo
   });
 }
 
-function normalizeKeyword(keyword: string): string {
-  return keyword.trim().toLowerCase();
-}
-
-function createKeywordWeights(memories: readonly DashboardMemoryRecord[]): DashboardKeyword[] {
-  const weights = new Map<string, number>();
-
-  memories.forEach((memory) => {
-    const contribution = memory.priority_score + (memory.pinned ? 0.12 : 0);
-
-    memory.keywords.forEach((keyword) => {
-      const normalized = normalizeKeyword(keyword);
-      weights.set(normalized, (weights.get(normalized) ?? 0) + contribution);
-    });
-  });
-
-  return [...weights.entries()]
-    .map(([keyword, weight]) => ({ keyword, weight: clampWeight(weight) }))
-    .sort((left, right) => right.weight - left.weight)
-    .slice(0, 8);
-}
-
-function buildThemeLabel(memory: DashboardMemoryRecord): string {
-  if (memory.info_type) {
-    return `${memory.info_type}: ${memory.keywords.slice(0, 2).join(" ")}`;
-  }
-
-  return memory.keywords.slice(0, 2).join(" ");
-}
-
-function createThemes(memories: readonly DashboardMemoryRecord[]): DashboardTheme[] {
-  const themeMap = new Map<string, DashboardTheme>();
-
-  memories.slice(0, 5).forEach((memory) => {
-    const label = buildThemeLabel(memory);
-    const existing = themeMap.get(label);
-
-    if (existing) {
-      existing.weight = clampWeight(existing.weight + memory.priority_score);
-      existing.memory_ids.push(memory.id);
-      return;
+function toStructuredMemory(memory: DashboardMemoryRecord): StructuredMemoryRecord {
+  return {
+    id: memory.id,
+    content: memory.content,
+    keywords: [...memory.keywords],
+    status: memory.status,
+    pinned: memory.pinned,
+    riskLevel: memory.risk_level,
+    createdAt: memory.created_at,
+    updatedAt: memory.updated_at ?? memory.last_activated ?? memory.created_at,
+    lastActivatedAt: memory.last_activated,
+    activationCount: memory.activation_count,
+    importance: memory.priority_score,
+    sourceEventIds: [],
+    sourcePaths: [],
+    storagePath: "dashboard-memory",
+    metadata: {
+      infoType: memory.info_type,
+      originContext: memory.origin_context,
+      originTrustLevel: memory.origin_tp
     }
+  };
+}
 
-    themeMap.set(label, {
-      label,
-      weight: clampWeight(memory.priority_score),
-      memory_ids: [memory.id]
-    });
-  });
+function toDashboardTheme(
+  theme: DashboardDerivedView["surfaced_themes"][number],
+  memoriesById: ReadonlyMap<string, DashboardMemoryRecord>
+): DashboardTheme {
+  const seedMemory = theme.memory_ids
+    .map((memoryId) => memoriesById.get(memoryId))
+    .find(Boolean);
+  const prefix = seedMemory?.info_type ? `${seedMemory.info_type}: ` : "";
 
-  return [...themeMap.values()].sort((left, right) => right.weight - left.weight);
+  return {
+    ...theme,
+    label: prefix && !theme.label.includes(":") ? `${prefix}${theme.label}` : theme.label
+  };
 }
 
 export function createSnapshot(memories: readonly DashboardMemoryRecord[]): DashboardSnapshot {
@@ -188,12 +172,24 @@ export function deriveDashboardView(memories: readonly DashboardMemoryRecord[]):
   const sorted = sortMemories(memories);
   const visible_memories = sorted.filter((memory) => memory.status !== "hidden");
   const hidden_memories = sorted.filter((memory) => memory.status === "hidden");
+  const memoriesById = new Map(sorted.map((memory) => [memory.id, memory]));
+  const priority = deriveMemoryPrioritySignals({
+    memories: sorted.map(toStructuredMemory),
+    keywordLimit: 8,
+    themeLimit: 5
+  });
 
   return {
     visible_memories,
     hidden_memories,
-    top_keywords: createKeywordWeights(visible_memories),
-    surfaced_themes: createThemes(visible_memories),
+    top_keywords: priority.topKeywords,
+    surfaced_themes: priority.topThemes
+      .map((theme) => ({
+        label: theme.label,
+        weight: theme.weight,
+        memory_ids: theme.memoryIds
+      }))
+      .map((theme) => toDashboardTheme(theme, memoriesById)),
     buckets: {
       active: visible_memories.filter((memory) => memory.status === "active"),
       pinned: visible_memories.filter((memory) => memory.pinned),

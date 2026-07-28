@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, type PropsWithChildren } from "react";
-import { baseMemories, buildDormantActivationResult, simulateActivation } from "@/lib/memory";
+import { createContext, useContext, useMemo, useRef, useState, type PropsWithChildren } from "react";
+import { baseMemories, buildDormantActivationResult } from "@/lib/memory";
 import {
   applyQueryResult,
   createInitialSessionState,
@@ -16,19 +16,30 @@ import {
 } from "@/lib/memory-state";
 import {
   buildMockNarrative,
+  type LLMQueryResult,
   mergeMemoryExplanationMap,
-  partitionMemoriesForQuery,
   type NarrativeState,
-  type PartitionedMemories,
-  type PensieveMode,
-  type QueryApiResponse
+  type PensieveMode
 } from "@/lib/query";
+import {
+  attachCdvResults,
+  prepareQueryExecution,
+  requestLiveNarrative
+} from "@/lib/pensieve-query-runtime";
+import {
+  beginQuerySubmission,
+  initialQuerySubmissionState,
+  isStaleQueryResponse,
+  settleQuerySubmission,
+  type QuerySubmissionState
+} from "@/lib/pensieve-query-lifecycle";
 
 type PensieveStore = {
   mode: PensieveMode;
   session: MemorySessionState;
   narrative: NarrativeState;
   displayedReasons: Record<string, string>;
+  submission: QuerySubmissionState;
   isLoading: boolean;
   error: string | null;
   setMode: (mode: PensieveMode) => void;
@@ -55,8 +66,10 @@ export function PensieveProvider({ children }: PropsWithChildren) {
   const [mode, setModeState] = useState<PensieveMode>("mock");
   const [session, setSession] = useState<MemorySessionState>(initialSession);
   const [narrative, setNarrative] = useState<NarrativeState>(initialNarrative);
+  const [submission, setSubmission] = useState<QuerySubmissionState>(initialQuerySubmissionState);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const submissionRef = useRef<QuerySubmissionState>(initialQuerySubmissionState);
 
   const applySessionMutation = (transform: (current: MemorySessionState) => MemorySessionState) => {
     setSession((current) => {
@@ -68,75 +81,90 @@ export function PensieveProvider({ children }: PropsWithChildren) {
   };
 
   const submitQuery = async () => {
-    let partitioned: PartitionedMemories | null = null;
+    let liveResult: (LLMQueryResult & { provider: string; model: string }) | null = null;
     let query = "";
+    let execution = prepareQueryExecution({
+      query: session.query,
+      modifiers: session.modifiers,
+      mode
+    });
     let shouldCallLive = false;
+    let currentSubmission = initialQuerySubmissionState;
+    const submittedAt = new Date().toISOString();
 
     setSession((current) => {
       query = current.query;
-      const nextActivation = current.query.trim()
-        ? simulateActivation(current.query, baseMemories, current.modifiers)
-        : buildDormantActivationResult(baseMemories, current.modifiers, current.query);
+      execution = prepareQueryExecution({
+        query: current.query,
+        modifiers: current.modifiers,
+        mode
+      });
 
-      if (current.query.trim()) {
-        partitioned = partitionMemoriesForQuery(nextActivation.memories);
-      } else {
-        partitioned = null;
-      }
-
-      const nextSession = applyQueryResult(current, current.query, nextActivation);
+      const nextSession = applyQueryResult(current, current.query, execution.activation);
       setNarrative(buildMockNarrative(nextSession.result));
       setError(null);
-      shouldCallLive = mode === "live" && Boolean(current.query.trim());
+      shouldCallLive = execution.shouldRequestLive;
       setIsLoading(shouldCallLive);
+      setSubmission((previous) => {
+        currentSubmission = beginQuerySubmission(previous, current.query, submittedAt, mode);
+        submissionRef.current = currentSubmission;
+        return currentSubmission;
+      });
       return nextSession;
     });
 
-    if (!partitioned || !shouldCallLive || !query.trim()) {
+    if (!execution.partitioned || !shouldCallLive || !query.trim()) {
+      const settledAt = new Date().toISOString();
+      setSubmission((previous) => {
+        const next = settleQuerySubmission(previous, currentSubmission.requestId, settledAt, "mock");
+        submissionRef.current = next;
+        return next;
+      });
       return;
     }
 
-    const safePartitioned = partitioned as PartitionedMemories;
-
     try {
-      const response = await fetch("/api/query", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ mode: "live", query, memories: safePartitioned.llmMemories, cdv_memories: safePartitioned.cdvMemories ?? [] })
-      });
-
-      const payload = (await response.json()) as QueryApiResponse;
-      if (!response.ok || !payload.ok || !payload.data || !payload.meta) {
-        throw new Error(payload.error ?? "Live LLM mode failed.");
+      liveResult = await requestLiveNarrative(query, execution.partitioned);
+      if (isStaleQueryResponse(submissionRef.current, currentSubmission.requestId)) {
+        return;
       }
-
       setNarrative({
-        ...payload.data,
-        provider: payload.meta.provider,
-        model: payload.meta.model,
+        ...liveResult,
         source: "live"
       });
 
-      const cdvResults = payload.data.cdv_results ?? {};
       setSession((current) => ({
         ...current,
         result: {
           ...current.result,
-          memories: current.result.memories.map((m) => ({
-            ...m,
-            cdv: cdvResults[m.id] ?? null
-          }))
+          response: liveResult?.answer ?? current.result.response,
+          memories: attachCdvResults(current.result.memories, liveResult?.cdv_results)
         }
       }));
 
       setError(null);
     } catch (requestError) {
+      if (isStaleQueryResponse(submissionRef.current, currentSubmission.requestId)) {
+        return;
+      }
       const message = requestError instanceof Error ? requestError.message : "Live LLM mode failed.";
       setError(`${message} Falling back to local mock narrative.`);
     } finally {
-      setIsLoading(false);
+      if (!isStaleQueryResponse(submissionRef.current, currentSubmission.requestId)) {
+        const settledAt = new Date().toISOString();
+        setSubmission((previous) => {
+          const next = settleQuerySubmission(
+            previous,
+            currentSubmission.requestId,
+            settledAt,
+            liveResult ? "live" : "mock",
+            liveResult ? "resolved" : "fallback"
+          );
+          submissionRef.current = next;
+          return next;
+        });
+        setIsLoading(false);
+      }
     }
   };
 
@@ -146,6 +174,7 @@ export function PensieveProvider({ children }: PropsWithChildren) {
       session,
       narrative,
       displayedReasons: mergeMemoryExplanationMap(session.result.reasons, narrative.memory_explanations),
+      submission,
       isLoading,
       error,
       setMode: (nextMode) => {
@@ -170,7 +199,7 @@ export function PensieveProvider({ children }: PropsWithChildren) {
       undo: () =>
         applySessionMutation((current) => undoLastSessionAction(current))
     }),
-    [mode, session, narrative, isLoading, error]
+    [mode, session, narrative, submission, isLoading, error]
   );
 
   return <PensieveContext.Provider value={store}>{children}</PensieveContext.Provider>;

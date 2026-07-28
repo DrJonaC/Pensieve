@@ -1,15 +1,15 @@
-import { detectCDV, type CDVMemoryUnit } from "@/lib/cdv";
+import { detectCDV, type CDVMemoryUnit } from "./cdv.ts";
 import {
   baseMemories as persistedBaseMemories,
   memoryRepository,
   type PersistedMemoryRecord
-} from "@/lib/memory-store";
+} from "./memory-store.ts";
 import {
   createMemoryDatabase,
   retrieveMemories,
   type MemoryDatabase,
   type MemoryRetrievalInput
-} from "@/lib/memory-rag";
+} from "./memory-rag.ts";
 
 export type RiskLevel = "low" | "medium" | "high";
 export type MemoryStatus = "active" | "softened" | "forgotten";

@@ -5,7 +5,7 @@ import {
   type ActivationResult,
   type MemoryModifierMap,
   type MemoryUnit
-} from "@/lib/memory";
+} from "./memory.ts";
 
 export type SessionSnapshot = {
   modifiers: MemoryModifierMap;

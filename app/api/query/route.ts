@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as QueryBody;
 
     if (!isValidBody(body)) {
-      return NextResponse.json({ ok: false, error: "Invalid request payload." }, { status: 500 });
+      return NextResponse.json({ ok: false, error: "Invalid request payload." }, { status: 400 });
     }
 
     const cdvMap = Object.fromEntries(

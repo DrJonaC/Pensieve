@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/AppShell";
+import { PensieveProvider } from "@/lib/session";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-body">
-        <AppShell>{children}</AppShell>
+        <PensieveProvider>
+          <AppShell>{children}</AppShell>
+        </PensieveProvider>
       </body>
     </html>
   );

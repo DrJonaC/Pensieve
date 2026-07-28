@@ -1,4 +1,5 @@
 import type { StructuredMemoryRecord } from "@/lib/plugin-types";
+import { presentStructuredMemoryItem } from "@/lib/pensieve-memory-item-presenter";
 
 type MemoryListPanelProps = {
   memories: StructuredMemoryRecord[];
@@ -38,6 +39,7 @@ export function MemoryListPanel({
       <div className={`mt-4 ${compact ? "space-y-2.5" : "space-y-3"}`}>
         {memories.map((memory) => {
           const isSelected = selectedMemoryId === memory.id;
+          const presented = presentStructuredMemoryItem(memory);
           return (
             <button
               key={memory.id}
@@ -50,19 +52,19 @@ export function MemoryListPanel({
               }`}
             >
               <div className="flex flex-wrap items-center gap-2">
-                <span className="dashboard-status-pill">{memory.status}</span>
-                {memory.pinned ? <span className="dashboard-status-pill">Pinned</span> : null}
+                <span className="dashboard-status-pill">{presented.statusLabel}</span>
+                {presented.pinned ? <span className="dashboard-status-pill">Pinned</span> : null}
                 <span
                   className={`rounded-full border px-2.5 py-1 text-[0.7rem] font-medium ${riskTone(memory.riskLevel)}`}
                 >
-                  {memory.riskLevel} risk
+                  {presented.riskLabel}
                 </span>
               </div>
 
-              <p className={`mt-3 font-semibold text-slate-800 ${compact ? "text-[0.82rem] leading-5" : "text-sm leading-6"}`}>{memory.content}</p>
+              <p className={`mt-3 font-semibold text-slate-800 ${compact ? "text-[0.82rem] leading-5" : "text-sm leading-6"}`}>{presented.title}</p>
 
               <div className={`mt-3 flex flex-wrap ${compact ? "gap-1.5" : "gap-2"}`}>
-                {memory.keywords.slice(0, 5).map((keyword) => (
+                {presented.keywords.slice(0, 5).map((keyword) => (
                   <span key={keyword} className="dashboard-chip">
                     {keyword}
                   </span>
@@ -70,9 +72,9 @@ export function MemoryListPanel({
               </div>
 
               <div className={`mt-3 grid gap-2 text-xs text-slate-500 ${compact ? "grid-cols-1" : "sm:grid-cols-3"}`}>
-                <p>Importance: {memory.importance.toFixed(2)}</p>
-                <p>Activations: {memory.activationCount}</p>
-                <p className="break-all">Store: {memory.storagePath}</p>
+                <p>Importance: {(presented.scorePercent / 100).toFixed(2)}</p>
+                <p>Activations: {presented.activationCount}</p>
+                <p className="break-all">Store: {presented.storageLabel}</p>
               </div>
             </button>
           );
