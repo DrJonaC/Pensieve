@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocale } from "@/lib/locale";
+
 import { useState } from "react";
 import { MemoryActionBar } from "@/components/dashboard/MemoryActionBar";
 import { type DashboardMemoryRecord } from "@/lib/pensieve-dashboard-core";
@@ -34,6 +36,7 @@ export function MemoryListPanel({
   onHide,
   onRestore
 }: MemoryListPanelProps) {
+  const { ui, t, language } = useLocale();
   const sectionLabel = expanded ? "Structured fragments and controls" : "Top memory fragments";
   const [hideIntentId, setHideIntentId] = useState<string | null>(null);
 
@@ -41,23 +44,23 @@ export function MemoryListPanel({
     <section className="dashboard-panel rounded-[1.45rem] p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="dashboard-kicker">Memory List</p>
-          <h3 className="dashboard-section-title mt-1">{sectionLabel}</h3>
+          <p className="dashboard-kicker">{ui("Memory List")}</p>
+          <h3 className="dashboard-section-title mt-1">{ui(sectionLabel)}</h3>
           <p className="dashboard-subcopy mt-2">
             {expanded
-              ? "Inspect fragment detail, recency, and direct governance controls."
-              : "A ranked overview of the fragments currently staying most present."}
+              ? ui("Inspect fragment detail, recency, and direct governance controls.")
+              : ui("A ranked overview of the fragments currently staying most present.")}
           </p>
         </div>
-        <span className="dashboard-meta-note">{memories.length} entries</span>
+        <span className="dashboard-meta-note">{memories.length} {ui("entries")}</span>
       </div>
 
       <div className="mt-4 space-y-3">
         {memories.length === 0 ? (
           <div className="rounded-[1rem] border border-dashed border-[rgba(122,150,144,0.24)] bg-white/60 px-4 py-4">
-            <p className="dashboard-meta-note">Empty field</p>
+            <p className="dashboard-meta-note">{ui("Empty field")}</p>
             <p className="dashboard-empty-copy mt-2">
-              No visible memories are currently active. Restore hidden traces or wait for new memory input from the host.
+              {ui("No visible memories are currently active. Restore hidden traces or wait for new memory input from the host.")}
             </p>
           </div>
         ) : null}
@@ -88,14 +91,14 @@ export function MemoryListPanel({
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="dashboard-meta-note">
-                        {presented.statusLabel}
+                        {ui(presented.statusLabel)}
                       </span>
                       <span className="rounded-full bg-[rgba(201,214,210,0.7)] px-2 py-0.5 text-[11px] text-[rgb(79,102,97)]">
-                        {presented.governanceTierLabel}
+                        {ui(presented.governanceTierLabel ?? "")}
                       </span>
                       {presented.pinned ? (
                         <span className="rounded-full bg-[rgba(118,161,153,0.18)] px-2 py-0.5 text-[11px] text-[rgb(73,109,102)]">
-                          pinned
+                          {ui("pinned")}
                         </span>
                       ) : null}
                     </div>
@@ -104,12 +107,14 @@ export function MemoryListPanel({
                         expanded ? "text-[1.02rem] font-semibold tracking-[-0.01em]" : "text-sm font-medium"
                       }`}
                     >
-                      {presented.title}
+                      {governed.tier === "protected"
+                        ? t(presented.title, `受保护的${ui(memory.info_type ?? (memory.origin_tp === "confidentiality" ? "Confidentiality" : memory.risk_level))}记忆`)
+                        : presented.title}
                     </h4>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <span className={`rounded-full px-2.5 py-1 text-[11px] ${riskClasses[memory.risk_level]}`}>
-                      {presented.riskLabel}
+                      {ui(presented.riskLabel)}
                     </span>
                     <span className="dashboard-meta-note">{presented.scorePercent}%</span>
                   </div>
@@ -119,7 +124,7 @@ export function MemoryListPanel({
               {expanded ? (
                 <div className="mt-4 space-y-4">
                   <p className="rounded-[0.95rem] bg-[rgba(236,241,239,0.76)] px-3 py-2 text-[12px] text-slate-600">
-                    Showing a {governed.tier_label.toLowerCase()} based on risk, origin, and memory type.
+                    {ui("Showing a")} {ui(governed.tier_label.toLowerCase())} {ui("based on risk, origin, and memory type.")}
                   </p>
 
                   <div className="h-1.5 rounded-full bg-[rgba(128,146,141,0.18)]">
@@ -132,32 +137,32 @@ export function MemoryListPanel({
                   <div className="flex flex-wrap gap-2">
                     {presented.keywords.slice(0, 6).map((keyword) => (
                       <span key={`${memory.id}-${keyword}`} className="dashboard-chip">
-                        {keyword}
+                        {governed.tier === "protected" ? ui(keyword) : keyword}
                       </span>
                     ))}
                   </div>
 
                   <div className="grid gap-2 text-[12px] text-slate-600 sm:grid-cols-2 lg:grid-cols-4">
                     <div className="rounded-[0.95rem] bg-white/75 px-3 py-2">
-                      <p className="dashboard-meta-note">Activated</p>
-                      <p className="mt-1 text-sm text-slate-900">{presented.lastActivatedLabel}</p>
+                      <p className="dashboard-meta-note">{ui("Activated")}</p>
+                      <p className="mt-1 text-sm text-slate-900">{memory.last_activated ? new Date(memory.last_activated).toLocaleDateString(language, { month: "short", day: "numeric" }) : ui("Not yet")}</p>
                     </div>
                     <div className="rounded-[0.95rem] bg-white/75 px-3 py-2">
-                      <p className="dashboard-meta-note">Count</p>
+                      <p className="dashboard-meta-note">{ui("Count")}</p>
                       <p className="mt-1 text-sm text-slate-900">{presented.activationCount}</p>
                     </div>
                     <div className="rounded-[0.95rem] bg-white/75 px-3 py-2">
-                      <p className="dashboard-meta-note">Type</p>
-                      <p className="mt-1 text-sm capitalize text-slate-900">{presented.infoTypeLabel}</p>
+                      <p className="dashboard-meta-note">{ui("Type")}</p>
+                      <p className="mt-1 text-sm capitalize text-slate-900">{ui(presented.infoTypeLabel ?? "")}</p>
                     </div>
                     <div className="rounded-[0.95rem] bg-white/75 px-3 py-2">
-                      <p className="dashboard-meta-note">Source</p>
-                      <p className="mt-1 text-sm capitalize text-slate-900">{presented.sourceLabel}</p>
+                      <p className="dashboard-meta-note">{ui("Source")}</p>
+                      <p className="mt-1 text-sm capitalize text-slate-900">{ui(presented.sourceLabel ?? "")}</p>
                     </div>
                   </div>
 
                   <div className="dashboard-memory-actions rounded-[1rem] border border-[rgba(113,149,142,0.18)] bg-[rgba(228,236,233,0.62)] p-3">
-                    <p className="dashboard-meta-note">Actions</p>
+                    <p className="dashboard-meta-note">{ui("Actions")}</p>
                     <div className="mt-3">
                       <MemoryActionBar
                         canRestore={memory.status === "hidden"}
@@ -178,12 +183,12 @@ export function MemoryListPanel({
                   {memory.status !== "hidden" && isHideConfirming ? (
                     <div className="rounded-[1rem] border border-[rgba(160,136,128,0.2)] bg-[rgba(248,244,242,0.88)] p-3">
                       <p className="dashboard-meta-note">
-                        {governed.hide_confirmation_tier === "strong" ? "Strong confirm" : "Confirm"}
+                        {governed.hide_confirmation_tier === "strong" ? ui("Strong confirm") : ui("Confirm")}
                       </p>
                       <p className="mt-2 text-sm leading-6 text-[rgb(89,83,79)]">
                         {governed.hide_confirmation_tier === "strong"
-                          ? "Hide this protected memory from the active field? The underlying record will still exist until a stronger deletion policy is introduced."
-                          : "Hide this memory from the active field? You can restore it later."}
+                          ? t("Hide this protected memory from retrieval? The record remains stored. Permanent deletion is available in Memory Library.", "隐藏这条受保护记忆，使其不再被检索？原始记录仍会保留。如需永久删除，请前往记忆库。")
+                          : t("Hide this memory from the active field? You can restore it later.", "隐藏这条记忆，使其不再被检索？之后可以恢复。")}
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         <button
@@ -195,7 +200,7 @@ export function MemoryListPanel({
                             onHide(memory.id);
                           }}
                         >
-                          Confirm Hide
+                          {ui("Confirm Hide")}
                         </button>
                         <button
                           type="button"
@@ -203,7 +208,7 @@ export function MemoryListPanel({
                           disabled={isPending}
                           onClick={() => setHideIntentId(null)}
                         >
-                          Cancel
+                          {ui("Cancel")}
                         </button>
                       </div>
                     </div>

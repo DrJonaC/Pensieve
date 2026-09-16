@@ -1,5 +1,6 @@
 import { type DashboardMemoryRecord } from "./pensieve-dashboard-core.ts";
 import { getGovernedMemoryDisplay } from "./pensieve-governance.ts";
+import { redactSensitiveText } from "./privacy.ts";
 
 export const GOVERNANCE_REPORT_SCHEMA_VERSION = "1.0" as const;
 
@@ -153,10 +154,11 @@ export function getGovernancePendingChanges(
     }
 
     const commands = deriveCommands(before, after);
-    const governedDisplay = getGovernedMemoryDisplay(memory);
+    // Redact before truncation, so partial credentials cannot survive a soft mask.
+    const governedDisplay = getGovernedMemoryDisplay({ ...memory, content: redactSensitiveText(memory.content) });
     return [{
       memory_id: memory.id,
-      content: governedDisplay.content,
+      content: redactSensitiveText(governedDisplay.content),
       risk_level: memory.risk_level,
       commands,
       before,
@@ -190,7 +192,18 @@ export function createGovernanceReport({
   };
 }
 
-export function renderGovernanceReportMarkdown(report: GovernanceReport): string {
+export function redactGovernanceReport(report: GovernanceReport, secrets: readonly string[] = []): GovernanceReport {
+  return { ...report,
+    source: { ...report.source, provider: redactSensitiveText(report.source.provider, secrets) },
+    changes: report.changes.map(change => ({ ...change,
+      content: redactSensitiveText(change.content, secrets),
+      reason: redactSensitiveText(change.reason, secrets)
+    }))
+  };
+}
+
+export function renderGovernanceReportMarkdown(input: GovernanceReport): string {
+  const report = redactGovernanceReport(input);
   const lines = [
     "---",
     `schema_version: \"${report.schema_version}\"`,

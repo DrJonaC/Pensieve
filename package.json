@@ -4,29 +4,34 @@
   "description": "A local dashboard plugin for structured LLM memory visibility and lightweight governance.",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --hostname 127.0.0.1",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --hostname 127.0.0.1",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit",
-    "test": "node --test --experimental-test-isolation=none ./lib/memory-rag.test.ts ./lib/memory-store.test.ts ./lib/memory-state.test.ts ./lib/pensieve-query-runtime.test.ts ./lib/pensieve-query-view.test.ts ./lib/pensieve-dashboard-core.test.ts ./lib/plugin-derive.test.ts ./lib/pensieve-records.test.ts ./lib/pensieve-governance-bridge.test.ts ./lib/pensieve-memory-presenter.test.ts ./lib/pensieve-memory-item-presenter.test.ts ./lib/pensieve-query-lifecycle.test.ts ./lib/pensieve-priority-portrait.test.ts ./lib/pensieve-request-trace.test.ts",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "node --test --experimental-test-isolation=none ./lib/*.test.ts ./lib/providers/*.test.ts ./lib/hosts/*.test.ts",
     "package:plugin": "node ./scripts/package-codex-plugin.mjs",
-    "test:package": "node --test ./scripts/package-codex-plugin.test.mjs",
+    "test:package": "node --test --experimental-test-isolation=none ./scripts/package-codex-plugin.test.mjs",
     "ci:check": "npm run typecheck && npm run test"
   },
   "dependencies": {
-    "next": "15.3.1",
+    "next": "15.5.25",
     "openai": "^5.23.2",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react": "19.1.9",
+    "react-dom": "19.1.9"
   },
   "devDependencies": {
     "@types/node": "22.15.3",
     "@types/react": "19.1.2",
     "@types/react-dom": "19.1.2",
     "autoprefixer": "10.4.21",
-    "postcss": "8.5.3",
+    "postcss": "8.5.28",
     "tailwindcss": "3.4.17",
     "typescript": "5.8.3"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "$postcss"
+    }
   }
 }

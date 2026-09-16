@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocale } from "@/lib/locale";
+import { redactSensitiveText } from "@/lib/privacy";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import {
@@ -31,6 +34,7 @@ export function DashboardHostShell({
   hostAdapter,
   provider
 }: DashboardHostShellProps) {
+  const { ui } = useLocale();
   const stableHostAdapter = useMemo(
     () => hostAdapter ?? createMockPensieveHostAdapter(),
     [hostAdapter]
@@ -180,9 +184,9 @@ export function DashboardHostShell({
   if (isBooting) {
     return (
       <div className="dashboard-panel rounded-[1.45rem] p-5">
-        <p className="dashboard-kicker">Host</p>
-        <h3 className="dashboard-section-title mt-1">Booting mock sidebar</h3>
-        <p className="dashboard-subcopy mt-2">Initializing host context, sidebar state, and event bridge.</p>
+        <p className="dashboard-kicker">{ui("Host")}</p>
+        <h3 className="dashboard-section-title mt-1">{ui("Booting mock sidebar")}</h3>
+        <p className="dashboard-subcopy mt-2">{ui("Initializing host context, sidebar state, and event bridge.")}</p>
       </div>
     );
   }
@@ -190,9 +194,9 @@ export function DashboardHostShell({
   if (hostError || !context) {
     return (
       <div className="dashboard-panel rounded-[1.45rem] border-[rgba(160,115,108,0.22)] p-5">
-        <p className="dashboard-kicker">Host Error</p>
-        <h3 className="dashboard-section-title mt-1">Adapter startup failed</h3>
-        <p className="dashboard-subcopy mt-2">{hostError ?? "Host context was not available."}</p>
+        <p className="dashboard-kicker">{ui("Host Error")}</p>
+        <h3 className="dashboard-section-title mt-1">{ui("Adapter startup failed")}</h3>
+        <p className="dashboard-subcopy mt-2">{hostError ? redactSensitiveText(hostError) : ui("Host context was not available.")}</p>
       </div>
     );
   }
@@ -200,10 +204,10 @@ export function DashboardHostShell({
   if (!hostState.visible) {
     return (
       <div className="dashboard-panel rounded-[1.45rem] p-5">
-        <p className="dashboard-kicker">Host Hidden</p>
-        <h3 className="dashboard-section-title mt-1">Sidebar collapsed by host</h3>
+        <p className="dashboard-kicker">{ui("Host Hidden")}</p>
+        <h3 className="dashboard-section-title mt-1">{ui("Sidebar collapsed by host")}</h3>
         <p className="dashboard-subcopy mt-2">
-          The dashboard remains mounted, but the host has marked the sidebar as not currently visible.
+          {ui("The dashboard remains mounted, but the host has marked the sidebar as not currently visible.")}
         </p>
       </div>
     );

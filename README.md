@@ -2,211 +2,156 @@
 
 # Pensieve: Know How AI Remembers You
 
-### See what AI remembers about you. Understand why. Decide what remains.
+**Inspect. Migrate. Govern.**
 
-A local-first, host-agnostic dashboard that makes structured AI memory visible, understandable, and governable.
+A local-first workspace for structured AI memory, with a plugin-ready dashboard.
 
-[English](./README.md) · [简体中文](./README.zh-CN.md) · [Installation](./CODEX_PLUGIN_INSTALL.md) · [Architecture](./PENSIEVE_DASHBOARD_PLUGIN_DESIGN.md)
+[English](README.md) · [简体中文](README.zh-CN.md) · [Migration guide](docs/MEMORY_MIGRATION.md) · [Privacy](docs/PRIVACY.md)
 
-![MIT License](https://img.shields.io/badge/license-MIT-718b84?style=flat-square)
-![Next.js 15](https://img.shields.io/badge/Next.js-15.3-263d38?style=flat-square&logo=nextdotjs&logoColor=white)
-![TypeScript Strict](https://img.shields.io/badge/TypeScript-strict-789fa3?style=flat-square&logo=typescript&logoColor=white)
-![Status](https://img.shields.io/badge/status-research%20preview-a8bab4?style=flat-square)
+![MIT](https://img.shields.io/badge/license-MIT-718b84?style=flat-square)
+![Next.js](https://img.shields.io/badge/Next.js-15.5-263d38?style=flat-square)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-789fa3?style=flat-square)
+![Status](https://img.shields.io/badge/status-local%20research%20preview-a8bab4?style=flat-square)
 
-![Pensieve: a magical memory basin revealing how AI remembers you](./docs/assets/pensieve-hero.png)
+![Pensieve concept illustration, not a product screenshot](docs/assets/pensieve-hero.png)
 
 </div>
 
-## Overview
+## Why Pensieve?
 
-AI does more than answer you. Across repeated interactions, it can build a working memory of your preferences, projects, habits, and sensitive context. Those memories may shape future responses, yet users rarely see how they are formed, why they surface, or what should remain.
+Memory can shape an assistant's answers, but users need more than a hidden store:
+they need to inspect what was retained, understand what surfaced, and change it.
+Pensieve brings **observability, portability and user control** into one local interface.
 
-**Pensieve lets you know how AI remembers you.** It turns hidden memory state into a user-facing control surface: reading structured memories through a provider, showing what remains prominent, protecting sensitive details, and enabling reversible governance actions. Its Governance Bridge then compiles those decisions into a reviewable Markdown report, a deterministic JSON manifest, and a verifiable provider receipt.
+Pensieve manages **external structured memory**, not model weights or internal attention.
+The shipped adapters use Pensieve's own repository. They do not automatically read or
+modify private ChatGPT, Claude, Codex or Claude Code memories.
 
-Pensieve does not modify model weights. It governs the external memory records and retrieval state that shape future model context.
+## What's New
 
-## Product At A Glance
-
-| Layer | What Pensieve exposes |
+| Capability | What you can do |
 | --- | --- |
-| **Snapshot** | Total, active, pinned, softened, hidden, and high-risk memory counts |
-| **Priority** | Weighted keywords and surfaced themes derived from visible memory |
-| **Memory units** | Structured fragments with provenance, risk, recency, activation, and status |
-| **Governance** | Reversible `pin`, `soften`, `hide`, and `restore` controls |
-| **Write-back** | Markdown report, JSON manifest, desired-state application, and receipt verification |
-| **Protection** | Full, soft-mask, and protected display tiers for sensitive memory |
+| Memory Library | Import versioned JSON or plain text without asking a question; preview additions, duplicates and conflicts |
+| Portable backups | Export selected or eligible records as JSON or text; preserve metadata in JSON |
+| Editing and governance | Edit content/keywords, pin, soften, hide, restore or confirm deletion; changes affect actual retrieval |
+| Safer persistence | Revision checks, exclusive write locks, atomic file replacement and pre-change backups |
+| English / Chinese | Switch interface language without translating your memories or generated answers |
+| Credential protection | Replace recognized credentials with `[REDACTED:...]` in model input, generated text, reports and errors |
+| Release hygiene | Runtime data and secrets excluded from packages; developer diagnostic route removed |
 
-## The Governance Loop
+## Explore the App
 
-Most memory tools stop at storage or retrieval. Pensieve focuses on the missing loop between **observation** and **user agency**.
+| Route | Purpose |
+| --- | --- |
+| `/` | Overview, current session and entry points |
+| `/memories` | Import → preview → confirm → manage → export |
+| `/guide` | Concepts and operating guidance |
+| `/user-view` | Priority keywords, themes and ranked memory cards |
+| `/surface-model` | Mock/Live queries, answers, explanations, request trace and simulated heatmap |
+| `/dashboard` | Query-free dashboard and mock host preview |
+| `/plugin` | Host-adapter preview; not a native host-memory connection |
 
-![Pensieve governance loop](./docs/assets/governance-loop.svg)
-
-1. Pensieve reads the current structured memory field.
-2. The user inspects priority, risk, and provenance.
-3. The user applies reversible governance decisions.
-4. Pensieve compiles the resulting state into Markdown and JSON.
-5. A provider applies that desired state to its memory store.
-6. Pensieve verifies the result through an itemized receipt.
-
-Reports are based on state differences, not UI event replay. Repeated application converges to the same target state instead of duplicating mutations.
-
-## Architecture
-
-Pensieve is deliberately split into a small host-independent kernel and replaceable integration boundaries.
-
-![Pensieve host-agnostic architecture](./docs/assets/architecture.svg)
-
-- **Dashboard core** derives snapshot metrics, ranking, keywords, themes, and display state.
-- **MemoryProvider** owns source-of-truth memory reads and mutations.
-- **Governance Bridge** translates user decisions into portable reports and receipts.
-- **Host adapter** connects sidebar lifecycle and runtime events without leaking host assumptions into the core.
-- **Local repository** provides a file-backed reference implementation for development and verification.
-
-The provider contract remains intentionally small:
-
-```ts
-interface MemoryProvider {
-  getSnapshot(): Promise<DashboardSnapshot>
-  getMemories(): Promise<DashboardMemoryRecord[]>
-  applyAction(action: DashboardAction): Promise<DashboardActionResult>
-
-  getGovernanceStatus?(): Promise<GovernanceBridgeStatus>
-  generateGovernanceReport?(): Promise<GovernanceReportArtifact>
-  applyGovernanceReport?(reportId: string): Promise<GovernanceReceipt>
-}
-```
-
-Read-only providers can implement only the first two methods. A real Codex, Claude Code, or other memory integration can add mutation and governance capabilities without changing the dashboard.
-
-## Structured Memory Model
-
-Pensieve treats memory as a semantic record, not a runtime event.
-
-```ts
-type MemoryUnit = {
-  id: string
-  content: string
-  keywords: string[]
-  priority_score: number
-  risk_level: "low" | "medium" | "high"
-  status: "active" | "softened" | "hidden"
-  pinned: boolean
-  created_at: string
-  last_activated: string
-  activation_count: number
-}
-```
-
-Runtime events describe interaction with memory. Memory units are the stored semantic objects being observed and governed.
+![Pensieve overview with bundled sample data](docs/assets/home-overview.png)
 
 ## Quick Start
 
-### Run the local dashboard
+Use Node.js 22.18+ (Node 22 LTS is used in CI).
 
 ```bash
 git clone https://github.com/DrJonaC/Pensieve.git
 cd Pensieve
-npm install
+npm ci
 npm run dev
 ```
 
-Open `http://localhost:3000/dashboard`.
+Open **http://127.0.0.1:3000/memories**. A new library starts with bundled sample
+memories. No API key is needed for memory management or Mock mode.
 
-The local preview uses:
+For optional Live mode, create `.env.local` in the project root:
 
-- `data/pensieve-memory-records.json` as its structured memory repository
-- `/api/dashboard-memory` for memory reads and reversible actions
-- `/api/governance-report` for report generation, provider application, and receipts
-
-Generated governance artifacts are local and Git-ignored:
-
-```text
-data/pensieve-governance/
-  reports/
-  receipts/
+```dotenv
+OPENAI_API_KEY=your_api_key_here
 ```
 
-### Install as a Codex plugin
+The server uses the OpenAI Responses API. Only explicitly submitting a Live query
+sends the filtered query and selected memory context to the model. Never commit
+`.env.local`. Restart the app after changing server configuration.
 
 ```bash
-codex plugin add pensieve-dashboard-plugin@pensieve-local
+npm run build
+npm run start
 ```
 
-The local marketplace and Windows setup are documented in [CODEX_PLUGIN_INSTALL.md](./CODEX_PLUGIN_INSTALL.md). Start a new Codex task after reinstalling so the updated plugin metadata is loaded.
+Both local commands bind to loopback. This is a single-user application, **not an
+authenticated public service**. Do not expose it publicly without access controls.
 
-## Safety Model
+## How It Works
 
-Memory governance needs stronger semantics than a generic delete button.
+```text
+JSON / text → validated preview → shared file repository
+                                    ↓
+                 dashboard / memory management / local retrieval
+                                    ↓
+                   Mock answer or filtered server-side LLM call
+                                    ↓
+                    answer + explanation + simulated heatmap
+```
 
-- `soften` lowers prominence while preserving the record.
-- `hide` suppresses active retrieval and remains reversible.
-- `restore` returns hidden memory to the active field.
-- High-sensitivity records use protected representations in both the UI and exported reports.
-- The JSON manifest is the machine-readable source of truth; Markdown is the human review surface.
-- Pensieve requires a receipt before it labels a report as verified.
+- The default store is `data/pensieve-memory-records.json`; `PENSIEVE_DATA_DIR`
+  can relocate runtime data, including governance reports.
+- Retrieval uses a local lexical vector index rebuilt from current records,
+  followed by ranking modifiers. It is not an external semantic embedding service.
+- Hidden/deleted records are excluded from retrieval; edits replace indexed content.
+- Providers separate memory access from host adapters and UI. Governance reports
+  record desired state, with JSON manifests and verification receipts.
+- The heatmap is an illustrative local surface, **not measured model attention or
+  causal attribution**. Model-generated explanations are interpretations, not proof.
 
-Physical deletion is intentionally not claimed yet. A production hard-delete flow needs provider support, confirmation policy, retention semantics, and auditable proof of deletion.
+## Privacy and Recovery
 
-## Why This Project Matters
+Credential filtering is best-effort, not a complete secret or personal-data detector.
+It covers recognized token formats, labeled credentials, private keys and selected
+server-secret values. Errors retain their original language after filtering.
 
-Pensieve treats LLM memory as three connected research problems:
+**Raw memories, source records, exports and backups remain original, unencrypted
+local data.** Review before sharing. Deletion removes the active record, not every
+historical backup; it is not secure erasure. Existing exposed keys must be rotated.
 
-1. **Retrieval** — which stored memories influence future context?
-2. **Observability** — can users understand what the system currently holds prominent?
-3. **Governance** — can user decisions reliably change future memory behavior?
+Imports merge by default without silently overwriting conflicts. JSON roundtrips
+preserve source metadata, timestamps and governance state. Text is stored as supplied,
+one nonempty line per memory, without inferring personal facts. Neither export format
+is advertised as a native ChatGPT/Claude backup format.
 
-This makes Pensieve different from a conventional RAG inspector, a static analytics dashboard, or a chat UI. The product contribution is the observable and governable memory surface; the systems contribution is the provider and host boundary; the research contribution is the auditable feedback loop from user intent to memory-state verification.
+See [migration and recovery](docs/MEMORY_MIGRATION.md) and [privacy boundaries](docs/PRIVACY.md).
 
-## Current Scope
+## Verification
 
-Pensieve currently ships as a **local Codex-compatible plugin source and reference implementation**.
+```bash
+npm run typecheck
+npm test
+npm run test:package
+npm run build
+```
 
-Implemented:
+The migration/privacy update passed 72 unit tests, 4 package-policy checks, strict
+TypeScript and a production build. Browser suites cover memory management,
+localization and credential redaction using an isolated library and synthetic data.
+No real-provider call is included in those checks. See `scripts/check-*-ui.mjs`
+and the [verification instructions](docs/MEMORY_MIGRATION.md#verification).
 
-- [x] Structured memory records and local persistence
-- [x] Query-free memory dashboard
-- [x] Priority keywords and surfaced themes
-- [x] Governance-aware sensitive display
-- [x] Reversible memory actions
-- [x] Governance reports, manifests, and receipts
-- [x] Host-agnostic provider and adapter contracts
-- [x] Bounded host-event capture for stable local previews
+## Integration and Research
 
-Next:
+The product contribution is a user-facing memory control surface; the engineering
+contribution is shared persistence and provider/host boundaries. Research questions
+include how users interpret retrieval, how governance affects future recall, and
+how to verify that user decisions were applied.
 
-- [ ] Native Codex memory write-back adapter
-- [ ] Claude Code memory provider
-- [ ] Provider capability discovery and permission UX
-- [ ] Policy-backed correction, expiration, and hard deletion
-- [ ] Pre/post governance retrieval evaluation
-- [ ] Additional memory-store adapters
-
-## Documentation
-
-| Document | Purpose |
-| --- | --- |
-| [Plugin design](./PENSIEVE_DASHBOARD_PLUGIN_DESIGN.md) | Product boundaries, provider philosophy, and interaction decisions |
-| [Visual style](./PENSIEVE_DASHBOARD_VISUAL_STYLE.md) | Reusable Morandi green-cyan dashboard language |
-| [Codex installation](./CODEX_PLUGIN_INSTALL.md) | Local marketplace and plugin setup |
-| [Governance Bridge update](./docs/updates/2026-07-17-governance-bridge.md) | Report, manifest, receipt, and telemetry release notes |
-| [Project review](./PENSIEVE_PROJECT_REVIEW.md) | Motivation, innovation, and research framing |
-| [Repository showcase](./docs/PENSIEVE_REPO_SHOWCASE.md) | GitHub and portfolio positioning |
-
-## Contributing
-
-Pensieve is early and intentionally modular. Issues and focused pull requests are welcome, especially around memory-provider adapters, governance semantics, evaluation, privacy, and host integration.
-
-Please keep new integrations behind provider or host-adapter boundaries rather than coupling them directly into the dashboard core.
+Native host-memory write-back, semantic embedding providers, broader privacy
+classification and measured pre/post governance evaluations remain future work.
+See the [plugin setup reference](CODEX_PLUGIN_INSTALL.md),
+[architecture](PENSIEVE_DASHBOARD_PLUGIN_DESIGN.md), and
+[project showcase](docs/PENSIEVE_REPO_SHOWCASE.md).
 
 ## License
 
-Released under the [MIT License](./LICENSE).
-
----
-
-<div align="center">
-
-**Know how AI remembers you. Decide what it should remember next.**
-
-</div>
+[MIT](LICENSE). Focused contributions to providers, governance, privacy and evaluation are welcome.

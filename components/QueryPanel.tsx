@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocale } from "@/lib/locale";
+import { redactSensitiveText } from "@/lib/privacy";
+
 import { InputBox } from "@/components/InputBox";
 import { ModeToggle } from "@/components/ModeToggle";
 import { SessionControls } from "@/components/SessionControls";
@@ -55,14 +58,15 @@ export function QueryPanel({
   onRestoreForgotten,
   onUndo
 }: QueryPanelProps) {
+  const { ui, language } = useLocale();
   return (
     <section className="rounded-[1.8rem] border border-cyan-300/12 bg-slate-950/55 p-5 shadow-[0_24px_60px_rgba(3,8,20,0.32)] backdrop-blur">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="max-w-2xl">
-          <p className="text-xs uppercase tracking-[0.26em] text-cyan-200/75">Surface Memory</p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white">Query-based memory observability</h2>
+          <p className="text-xs uppercase tracking-[0.26em] text-cyan-200/75">{ui("Surface Memory")}</p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white">{ui("Query-based memory observability")}</h2>
           <p className="mt-2 text-sm leading-7 text-slate-300">
-            Submit a query to trigger retrieval, reranking, explanation, and token-level influence in one coherent flow.
+            {ui("Submit a query to trigger retrieval, reranking, explanation, and token-level influence in one coherent flow.")}
           </p>
         </div>
         <div className="flex flex-col items-start gap-3 lg:items-end">
@@ -82,7 +86,7 @@ export function QueryPanel({
           onChange={onQueryChange}
           onSubmit={onSubmit}
           isLoading={isLoading}
-          modeLabel={mode === "mock" ? "Mock Mode" : "Live Mode"}
+          modeLabel={mode === "mock" ? ui("Mock Mode") : ui("Live Mode")}
         />
       </div>
 
@@ -95,14 +99,14 @@ export function QueryPanel({
               : "border-white/10 bg-white/5 text-slate-300"
         }`}
       >
-        {getStatusCopy(status, error)}
+        {error ? <>{ui("Error")}: {redactSensitiveText(error)}</> : ui(getStatusCopy(status, null))}
       </div>
 
       <div className="mt-3 flex flex-wrap gap-3 text-[11px] uppercase tracking-[0.2em] text-cyan-100/55">
-        <span>Last submit: {submission.submittedAt ? new Date(submission.submittedAt).toLocaleTimeString() : "none"}</span>
-        <span>Last settle: {submission.settledAt ? new Date(submission.settledAt).toLocaleTimeString() : "pending"}</span>
-        <span>{submission.pendingRequestId ? "Request in flight" : "Session settled"}</span>
-        <span>Source: {submission.lastResponseSource ? submission.lastResponseSource : "not-yet"}</span>
+        <span>{ui("Last submit:")} {submission.submittedAt ? new Date(submission.submittedAt).toLocaleTimeString(language) : ui("none")}</span>
+        <span>{ui("Last settle:")} {submission.settledAt ? new Date(submission.settledAt).toLocaleTimeString(language) : ui("pending")}</span>
+        <span>{submission.pendingRequestId ? ui("Request in flight") : ui("Session settled")}</span>
+        <span>{ui("Source:")} {ui(submission.lastResponseSource ?? "not-yet")}</span>
       </div>
     </section>
   );

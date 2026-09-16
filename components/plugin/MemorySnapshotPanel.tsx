@@ -1,3 +1,6 @@
+"use client";
+
+import { useLocale } from "@/lib/locale";
 import type { MemorySnapshot, StorageInfo } from "@/lib/plugin-types";
 
 type MemorySnapshotPanelProps = {
@@ -11,10 +14,11 @@ export function MemorySnapshotPanel({
   storageInfo,
   compact = false
 }: MemorySnapshotPanelProps) {
+  const { ui } = useLocale();
   if (!snapshot) {
     return (
       <section className="dashboard-panel rounded-[1.75rem] p-5">
-        <p className="dashboard-empty-copy">Loading the local memory field...</p>
+        <p className="dashboard-empty-copy">{ui("Loading the local memory field...")}</p>
       </section>
     );
   }
@@ -32,16 +36,15 @@ export function MemorySnapshotPanel({
     <section className="dashboard-panel rounded-[1.75rem] p-5 md:p-6">
       <div className={`flex gap-4 ${compact ? "flex-col" : "flex-col md:flex-row md:items-start md:justify-between"}`}>
         <div className={`${compact ? "space-y-2" : "max-w-2xl space-y-2"}`}>
-          <p className="dashboard-kicker">Structured Memory Layer</p>
-          <h1 className="dashboard-heading">Pensieve Plugin Core</h1>
+          <p className="dashboard-kicker">{ui("Structured Memory Layer")}</p>
+          <h1 className="dashboard-heading">{ui("Pensieve Plugin Core")}</h1>
           <p className="dashboard-subcopy">
-            This dashboard exposes structured memory distilled from captured events, along with the
-            local paths where those memories and vector artifacts live.
+            {ui("This dashboard exposes structured memory distilled from captured events, along with the local paths where those memories and vector artifacts live.")}
           </p>
         </div>
         {storageInfo ? (
           <div className={`rounded-2xl border border-slate-200/70 bg-white/75 px-4 py-3 shadow-sm ${compact ? "" : "text-right"}`}>
-            <p className="dashboard-meta-note">Provider</p>
+            <p className="dashboard-meta-note">{ui("Provider")}</p>
             <p className="text-sm font-medium text-slate-700">{storageInfo.providerName}</p>
           </div>
         ) : null}
@@ -53,7 +56,7 @@ export function MemorySnapshotPanel({
             key={metric.label}
             className="rounded-2xl border border-slate-200/70 bg-white/72 px-4 py-4 shadow-sm"
           >
-            <p className="dashboard-meta-note">{metric.label}</p>
+            <p className="dashboard-meta-note">{ui(metric.label)}</p>
             <p className="dashboard-metric-value mt-2">{metric.value}</p>
           </div>
         ))}
@@ -61,9 +64,9 @@ export function MemorySnapshotPanel({
 
       {storageInfo ? (
         <div className={`mt-5 grid gap-3 ${compact ? "grid-cols-1" : "lg:grid-cols-3"}`}>
-          <PathCard label="Memory Store" path={storageInfo.memoryStorePath} />
-          <PathCard label="Capture Store" path={storageInfo.captureStorePath ?? "Not yet mapped"} />
-          <PathCard label="Vector Store" path={storageInfo.vectorStorePath ?? "Not yet mapped"} />
+          <PathCard label={ui("Memory Store")} path={storageInfo.memoryStorePath} />
+          <PathCard label={ui("Capture Store")} path={storageInfo.captureStorePath ?? ui("Not yet mapped")} />
+          <PathCard label={ui("Vector Store")} path={storageInfo.vectorStorePath ?? ui("Not yet mapped")} />
         </div>
       ) : null}
     </section>

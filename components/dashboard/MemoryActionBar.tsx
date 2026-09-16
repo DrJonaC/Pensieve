@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocale } from "@/lib/locale";
+
 type MemoryActionBarProps = {
   canRestore: boolean;
   isPinned: boolean;
@@ -21,6 +23,7 @@ export function MemoryActionBar({
   onHide,
   onRestore
 }: MemoryActionBarProps) {
+  const { ui } = useLocale();
   return (
     <div className="flex flex-wrap gap-2">
       <button
@@ -29,7 +32,7 @@ export function MemoryActionBar({
         disabled={isPending || canRestore}
         className="dashboard-action-button"
       >
-        {isPinned ? "Unpin" : "Pin"}
+        {isPinned ? ui("Unpin") : ui("Pin")}
       </button>
       <button
         type="button"
@@ -37,7 +40,7 @@ export function MemoryActionBar({
         disabled={isPending || canRestore}
         className="dashboard-action-button"
       >
-        {isSoftened ? "Unsoften" : "Soften"}
+        {isSoftened ? ui("Unsoften") : ui("Soften")}
       </button>
       {canRestore ? (
         <button
@@ -46,7 +49,7 @@ export function MemoryActionBar({
           disabled={isPending}
           className="dashboard-action-button dashboard-action-button--accent"
         >
-          Restore
+          {ui("Restore")}
         </button>
       ) : (
         <button
@@ -55,7 +58,7 @@ export function MemoryActionBar({
           disabled={isPending}
           className="dashboard-action-button"
         >
-          Hide
+          {ui("Hide")}
         </button>
       )}
     </div>

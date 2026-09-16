@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
+import { isSameOriginRequest } from "@/lib/request-safety";
+import { safeErrorMessage } from "@/lib/privacy-server";
 import {
   readPensieveRepository,
   applyPensieveRepositoryAction,
-  getPensieveRepositoryPath
+  getPensieveRepositoryPath,
+  repositoryRevision,
+  RepositoryConflictError
 } from "@/lib/pensieve-file-repository";
 import { toDashboardActionResult } from "@/lib/pensieve-records";
 import { type DashboardAction } from "@/lib/pensieve-dashboard-core";
 
 type DashboardMemoryRequestBody = {
   action?: unknown;
+  revision?: unknown;
 };
 
 function isDashboardAction(value: unknown): value is DashboardAction {
@@ -47,18 +52,18 @@ export async function GET() {
 
     return NextResponse.json({
       ok: true,
-      data: result,
+      data: { ...result, revision: repositoryRevision(records) },
       meta: {
         repository_path: getPensieveRepositoryPath(),
         storage: "local-file"
       }
     });
   } catch (error) {
-    console.error("[DASHBOARD MEMORY GET ERROR]", error);
+    console.error("[DASHBOARD MEMORY GET ERROR]", safeErrorMessage(error, "Failed to read dashboard memory repository."));
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "Failed to read dashboard memory repository."
+        error: safeErrorMessage(error, "Failed to read dashboard memory repository.")
       },
       { status: 500 }
     );
@@ -66,31 +71,32 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!isSameOriginRequest(request)) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
   try {
     const body = (await request.json()) as DashboardMemoryRequestBody;
 
-    if (!isDashboardAction(body.action)) {
+    if (!isDashboardAction(body.action) || typeof body.revision !== "string") {
       return NextResponse.json({ ok: false, error: "Invalid dashboard memory action." }, { status: 400 });
     }
 
-    const next = await applyPensieveRepositoryAction(body.action);
+    const next = await applyPensieveRepositoryAction(body.action, undefined, body.revision);
 
     return NextResponse.json({
       ok: true,
-      data: next.result,
+      data: { ...next.result, revision: repositoryRevision(next.records) },
       meta: {
         repository_path: getPensieveRepositoryPath(),
         storage: "local-file"
       }
     });
   } catch (error) {
-    console.error("[DASHBOARD MEMORY POST ERROR]", error);
+    console.error("[DASHBOARD MEMORY POST ERROR]", safeErrorMessage(error, "Failed to update dashboard memory repository."));
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "Failed to update dashboard memory repository."
+        error: safeErrorMessage(error, "Failed to update dashboard memory repository.")
       },
-      { status: 500 }
+      { status: error instanceof RepositoryConflictError ? 409 : 500 }
     );
   }
 }

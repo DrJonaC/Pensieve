@@ -1,4 +1,10 @@
 node_modules/
+data/
+*.bak
+*.tmp
+*.lock
+.env.*
+!.env.local.example
 .next/
 dist/
 .env.local

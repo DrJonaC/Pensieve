@@ -1,3 +1,6 @@
+"use client";
+
+import { useLocale } from "@/lib/locale";
 import type { StructuredMemoryRecord } from "@/lib/plugin-types";
 import { presentStructuredMemoryItem } from "@/lib/pensieve-memory-item-presenter";
 
@@ -26,13 +29,14 @@ export function MemoryListPanel({
   compact = false,
   onSelect
 }: MemoryListPanelProps) {
+  const { ui } = useLocale();
   return (
     <section className="dashboard-panel rounded-[1.5rem] p-5">
       <div className="space-y-2">
-        <p className="dashboard-kicker">Memory List</p>
-        <h2 className="dashboard-section-title">Structured memories available for review</h2>
+        <p className="dashboard-kicker">{ui("Memory List")}</p>
+        <h2 className="dashboard-section-title">{ui("Structured memories available for review")}</h2>
         <p className="dashboard-subcopy">
-          Select a memory to inspect its path, trace, metadata, and light governance controls.
+          {ui("Select a memory to inspect its path, trace, metadata, and light governance controls.")}
         </p>
       </div>
 
@@ -52,12 +56,12 @@ export function MemoryListPanel({
               }`}
             >
               <div className="flex flex-wrap items-center gap-2">
-                <span className="dashboard-status-pill">{presented.statusLabel}</span>
-                {presented.pinned ? <span className="dashboard-status-pill">Pinned</span> : null}
+                <span className="dashboard-status-pill">{ui(presented.statusLabel)}</span>
+                {presented.pinned ? <span className="dashboard-status-pill">{ui("Pinned")}</span> : null}
                 <span
                   className={`rounded-full border px-2.5 py-1 text-[0.7rem] font-medium ${riskTone(memory.riskLevel)}`}
                 >
-                  {presented.riskLabel}
+                  {ui(presented.riskLabel)}
                 </span>
               </div>
 
@@ -72,9 +76,9 @@ export function MemoryListPanel({
               </div>
 
               <div className={`mt-3 grid gap-2 text-xs text-slate-500 ${compact ? "grid-cols-1" : "sm:grid-cols-3"}`}>
-                <p>Importance: {(presented.scorePercent / 100).toFixed(2)}</p>
-                <p>Activations: {presented.activationCount}</p>
-                <p className="break-all">Store: {presented.storageLabel}</p>
+                <p>{ui("Importance:")} {(presented.scorePercent / 100).toFixed(2)}</p>
+                <p>{ui("Activations:")} {presented.activationCount}</p>
+                <p className="break-all">{ui("Store:")} {presented.storageLabel}</p>
               </div>
             </button>
           );

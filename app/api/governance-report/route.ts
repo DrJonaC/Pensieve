@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { isSameOriginRequest } from "@/lib/request-safety";
+import { safeErrorMessage } from "@/lib/privacy-server";
 
 import {
   getGovernanceBridgeStatus,
@@ -8,7 +10,8 @@ import {
 } from "@/lib/pensieve-governance-repository";
 import {
   readPensieveRepository,
-  writePensieveRepository
+  mutateMemoryRepository,
+  repositoryRevision
 } from "@/lib/pensieve-file-repository";
 import { loadBaseMemories } from "@/lib/memory-store";
 import {
@@ -38,15 +41,16 @@ export async function GET() {
 
     return NextResponse.json({ ok: true, data: { status } });
   } catch (error) {
-    console.error("[GOVERNANCE STATUS ERROR]", error);
+    console.error("[GOVERNANCE STATUS ERROR]", safeErrorMessage(error, "Failed to read governance status."));
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "Failed to read governance status." },
+      { ok: false, error: safeErrorMessage(error, "Failed to read governance status.") },
       { status: 500 }
     );
   }
 }
 
 export async function POST(request: Request) {
+  if (!isSameOriginRequest(request)) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
   try {
     const body = (await request.json()) as GovernanceRequestBody;
 
@@ -65,7 +69,7 @@ export async function POST(request: Request) {
       const records = await readPensieveRepository();
       const nextRecords = applyGovernanceReportToRecords(records, report);
 
-      await writePensieveRepository(nextRecords);
+      await mutateMemoryRepository(repositoryRevision(records), () => nextRecords);
 
       const receipt = await writeGovernanceReceipt({
         report,
@@ -77,9 +81,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: false, error: "Invalid governance operation." }, { status: 400 });
   } catch (error) {
-    console.error("[GOVERNANCE REPORT ERROR]", error);
+    console.error("[GOVERNANCE REPORT ERROR]", safeErrorMessage(error, "Governance operation failed."));
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "Governance operation failed." },
+      { ok: false, error: safeErrorMessage(error, "Governance operation failed.") },
       { status: 500 }
     );
   }

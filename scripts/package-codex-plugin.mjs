@@ -19,7 +19,6 @@ export const PACKAGE_INCLUDE = [
   "app",
   "components",
   "codex-marketplace",
-  "data",
   "docs",
   "lib",
   "CODEX_PLUGIN_INSTALL.md",
@@ -39,13 +38,20 @@ function normalizePathForManifest(relativePath) {
   return relativePath.replace(/\\/g, "/");
 }
 
+export function isSafePackagePath(sourcePath) {
+  const parts = path.relative(repoRoot, sourcePath).split(path.sep);
+  return !parts.some(part => ["data", "node_modules", ".next", ".git", "cdv-test"].includes(part) ||
+    part.startsWith(".env") || /\.(bak|tmp|lock)$/i.test(part));
+}
+
 async function copyEntry(relativePath, outputRoot) {
   const sourcePath = path.join(repoRoot, relativePath);
   const destinationPath = path.join(outputRoot, relativePath);
 
   await cp(sourcePath, destinationPath, {
     recursive: true,
-    force: true
+    force: true,
+    filter: isSafePackagePath
   });
 }
 
@@ -53,9 +59,7 @@ async function writePackageManifest(outputRoot) {
   const manifest = {
     packaged_at: new Date().toISOString(),
     plugin_name: "pensieve-dashboard-plugin",
-    source_root: repoRoot,
-    output_root: outputRoot,
-    marketplace_path: marketplacePath,
+    marketplace_path: "codex-marketplace/marketplace.json",
     included_paths: PACKAGE_INCLUDE.map(normalizePathForManifest)
   };
 

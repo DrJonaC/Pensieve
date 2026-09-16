@@ -1,3 +1,7 @@
+"use client";
+
+import { useLocale } from "@/lib/locale";
+import { redactSensitiveText } from "@/lib/privacy";
 import {
   type GovernanceBridgeStatus,
   type GovernanceReceipt,
@@ -23,6 +27,7 @@ export function GovernanceBridgePanel({
   onGenerate,
   onApply
 }: GovernanceBridgePanelProps) {
+  const { ui, t } = useLocale();
   const report = artifact?.report ?? status?.latest_report ?? null;
   const currentReceipt = receipt ?? status?.latest_receipt ?? null;
   const pendingCount = status?.pending_change_count ?? 0;
@@ -34,18 +39,18 @@ export function GovernanceBridgePanel({
     <section className="dashboard-panel rounded-[1.45rem] p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="dashboard-kicker">Governance Bridge</p>
-          <h3 className="dashboard-section-title mt-1">Carry user decisions back to memory</h3>
+          <p className="dashboard-kicker">{ui("Governance Bridge")}</p>
+          <h3 className="dashboard-section-title mt-1">{ui("Carry user decisions back to memory")}</h3>
           <p className="dashboard-subcopy mt-2 max-w-[30rem]">
-            Compile the current governed state into a reviewable Markdown report and a deterministic host manifest.
+            {ui("Compile the current governed state into a reviewable Markdown report and a deterministic host manifest.")}
           </p>
         </div>
         <span className="dashboard-status-pill">
-          {pendingCount > 0 ? `${pendingCount} pending` : reportIsVerified ? "Verified" : "In sync"}
+          {pendingCount > 0 ? t(`${pendingCount} pending`, `${pendingCount} 项待处理`) : reportIsVerified ? ui("Verified") : ui("In sync")}
         </span>
       </div>
 
-      {error ? <p className="mt-3 text-sm text-[rgb(126,82,77)]">{error}</p> : null}
+      {error ? <p role="alert" className="mt-3 text-sm text-[rgb(126,82,77)]">{ui("Error")}: {redactSensitiveText(error)}</p> : null}
 
       <div className="dashboard-accent-line my-4" />
 
@@ -56,7 +61,7 @@ export function GovernanceBridgePanel({
           disabled={isBusy || pendingCount === 0}
           onClick={onGenerate}
         >
-          {isBusy ? "Working..." : "Generate report"}
+          {isBusy ? ui("Working...") : ui("Generate report")}
         </button>
         <button
           type="button"
@@ -64,7 +69,7 @@ export function GovernanceBridgePanel({
           disabled={isBusy || !report}
           onClick={() => report && onApply(report.report_id)}
         >
-          Apply & verify
+          {ui("Apply & verify")}
         </button>
       </div>
 
@@ -72,20 +77,20 @@ export function GovernanceBridgePanel({
         <div className="mt-4 rounded-2xl border border-[rgba(124,153,146,0.18)] bg-white/55 px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm font-medium text-slate-800">{report.report_id}</p>
-            <span className="dashboard-meta-note">{report.changes.length} changes</span>
+            <span className="dashboard-meta-note">{report.changes.length} {ui("changes")}</span>
           </div>
           <p className="dashboard-subcopy mt-1">
-            {artifact?.markdown_path ?? "Latest governance report is ready for provider synchronization."}
+            {artifact?.markdown_path ?? ui("Latest governance report is ready for provider synchronization.")}
           </p>
           {currentReceipt?.report_id === report.report_id ? (
             <p className="mt-2 text-xs font-medium capitalize text-[rgb(70,105,97)]">
-              Receipt: {currentReceipt.status} · {currentReceipt.items.length} checked
+              {ui("Receipt:")} {ui(currentReceipt.status)} · {currentReceipt.items.length} {ui("checked")}
             </p>
           ) : null}
         </div>
       ) : (
         <p className="dashboard-empty-copy mt-4">
-          Governance changes will appear here after you pin, soften, hide, or restore a memory.
+          {ui("Governance changes will appear here after you pin, soften, hide, or restore a memory.")}
         </p>
       )}
     </section>

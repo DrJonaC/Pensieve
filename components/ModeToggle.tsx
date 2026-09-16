@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocale } from "@/lib/locale";
+
 import { type PensieveMode } from "@/lib/query";
 
 type ModeToggleProps = {
@@ -9,6 +11,7 @@ type ModeToggleProps = {
 };
 
 export function ModeToggle({ mode, onChange, disabled = false }: ModeToggleProps) {
+  const { ui } = useLocale();
   return (
     <div className="inline-flex rounded-full border border-cyan-400/20 bg-slate-950/50 p-1 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
       {(["mock", "live"] as const).map((value) => {
@@ -26,7 +29,7 @@ export function ModeToggle({ mode, onChange, disabled = false }: ModeToggleProps
                 : "text-cyan-100/75 hover:bg-white/5 hover:text-cyan-50"
             } disabled:cursor-not-allowed disabled:opacity-60`}
           >
-            {value === "mock" ? "Mock Mode" : "Live Mode"}
+            {value === "mock" ? ui("Mock Mode") : ui("Live Mode")}
           </button>
         );
       })}

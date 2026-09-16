@@ -11,9 +11,12 @@ import {
   type GovernanceReportArtifact
 } from "./pensieve-governance-bridge.ts";
 
+import { notifyMemoryChange } from "./memory-events.ts";
+
 type DashboardMemoryApiResponse = {
   ok: boolean;
   data?: {
+    revision: string;
     snapshot: DashboardSnapshot;
     memories: DashboardMemoryRecord[];
     changed_memory?: DashboardMemoryRecord;
@@ -61,6 +64,7 @@ export function createPersistedMemoryProvider(
 ): MemoryProvider {
   const endpoint = options.endpoint ?? "/api/dashboard-memory";
   const governanceEndpoint = options.governanceEndpoint ?? "/api/governance-report";
+  let revision: string | undefined;
 
   const requestGovernance = async (init?: RequestInit): Promise<GovernanceApiResponse["data"]> => {
     const response = await fetch(governanceEndpoint, init);
@@ -76,11 +80,13 @@ export function createPersistedMemoryProvider(
   return {
     async getSnapshot(): Promise<DashboardSnapshot> {
       const data = await readDashboardMemoryData(await fetch(endpoint, { method: "GET" }));
+      revision = data.revision;
       return data.snapshot;
     },
 
     async getMemories(): Promise<DashboardMemoryRecord[]> {
       const data = await readDashboardMemoryData(await fetch(endpoint, { method: "GET" }));
+      revision = data.revision;
       return data.memories;
     },
 
@@ -91,10 +97,12 @@ export function createPersistedMemoryProvider(
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ action })
+          body: JSON.stringify({ action, revision })
         })
       );
 
+      revision = data.revision;
+      notifyMemoryChange();
       return data;
     },
 
@@ -127,6 +135,7 @@ export function createPersistedMemoryProvider(
       if (!data?.receipt) {
         throw new Error("Governance receipt response was incomplete.");
       }
+      notifyMemoryChange();
       return data.receipt;
     }
   };

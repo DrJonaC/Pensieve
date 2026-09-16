@@ -1,3 +1,6 @@
+"use client";
+
+import { useLocale } from "@/lib/locale";
 import { HeatmapCell, ScoredMemory } from "@/lib/memory";
 
 type HeatmapProps = {
@@ -19,10 +22,11 @@ function getCellColor(score: number): string {
 }
 
 export function Heatmap({ tokens, memories, heatmap }: HeatmapProps) {
+  const { ui, t } = useLocale();
   if (tokens.length === 0 || memories.length === 0) {
     return (
       <div className="rounded-[1.8rem] border border-cyan-300/12 bg-slate-950/55 p-6">
-        <p className="text-sm text-slate-300">Submit a query to render token-to-memory influence.</p>
+        <p className="text-sm text-slate-300">{ui("Submit a query to render token-to-memory influence.")}</p>
       </div>
     );
   }
@@ -31,12 +35,12 @@ export function Heatmap({ tokens, memories, heatmap }: HeatmapProps) {
     <div className="rounded-[1.8rem] border border-cyan-300/12 bg-slate-950/55 p-5">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-cyan-200/75">Model View</p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">Influence Heatmap</h2>
+          <p className="text-xs uppercase tracking-[0.24em] text-cyan-200/75">{ui("Model View")}</p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">{ui("Influence Heatmap")}</h2>
         </div>
         <div className="text-right text-xs text-slate-400">
-          <p>Columns: input tokens</p>
-          <p>Rows: memory units</p>
+          <p>{ui("Columns: input tokens")}</p>
+          <p>{ui("Rows: memory units")}</p>
         </div>
       </div>
 
@@ -65,7 +69,7 @@ export function Heatmap({ tokens, memories, heatmap }: HeatmapProps) {
                 return (
                   <div
                     key={`${memory.id}-${token}`}
-                    title={`Token "${token}" activates Memory "${memory.content}" with score ${score.toFixed(2)}`}
+                    title={t(`Token "${token}" activates Memory "${memory.content}" with score ${score.toFixed(2)}`, `词语「${token}」对记忆「${memory.content}」的模拟激活分数为 ${score.toFixed(2)}`)}
                     className={`flex aspect-square items-center justify-center rounded-2xl border border-white/10 text-[11px] text-white/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] ${getCellColor(score)}`}
                   >
                     {score.toFixed(2)}

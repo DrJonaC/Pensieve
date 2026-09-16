@@ -1,3 +1,6 @@
+"use client";
+
+import { useLocale } from "@/lib/locale";
 import { type DashboardSnapshot } from "@/lib/pensieve-dashboard-core";
 
 type SnapshotCardProps = {
@@ -20,15 +23,16 @@ const snapshotItems: Array<{
 ];
 
 export function SnapshotCard({ snapshot, compact = false }: SnapshotCardProps) {
+  const { ui, language } = useLocale();
   return (
     <section className="dashboard-panel rounded-[1.45rem] p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="dashboard-kicker">Snapshot</p>
-          <h3 className="dashboard-section-title mt-1">Memory field</h3>
+          <p className="dashboard-kicker">{ui("Snapshot")}</p>
+          <h3 className="dashboard-section-title mt-1">{ui("Memory field")}</h3>
         </div>
         <span className="dashboard-meta-note">
-          Updated {new Date(snapshot.last_updated_at).toLocaleDateString()}
+          {ui("Updated")} {new Date(snapshot.last_updated_at).toLocaleDateString(language)}
         </span>
       </div>
 
@@ -38,7 +42,7 @@ export function SnapshotCard({ snapshot, compact = false }: SnapshotCardProps) {
             key={item.key}
             className="rounded-[1rem] border border-[rgba(111,142,136,0.18)] bg-white/75 px-3 py-3"
           >
-            <p className="dashboard-meta-note">{item.label}</p>
+            <p className="dashboard-meta-note">{ui(item.label)}</p>
             <p className="dashboard-metric-value mt-2">{snapshot[item.key]}</p>
           </div>
         ))}
@@ -46,7 +50,7 @@ export function SnapshotCard({ snapshot, compact = false }: SnapshotCardProps) {
 
       {snapshot.total_count === 0 ? (
         <p className="dashboard-empty-copy mt-4">
-          The local repository is empty. Pensieve will surface a memory field once records are seeded by the provider.
+          {ui("The local repository is empty. Pensieve will surface a memory field once records are seeded by the provider.")}
         </p>
       ) : null}
     </section>

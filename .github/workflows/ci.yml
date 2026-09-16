@@ -9,6 +9,8 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
 
     steps:
       - name: Checkout
@@ -28,3 +30,9 @@ jobs:
 
       - name: Run focused tests
         run: npm run test
+
+      - name: Check package privacy rules
+        run: npm run test:package
+
+      - name: Production build
+        run: npm run build

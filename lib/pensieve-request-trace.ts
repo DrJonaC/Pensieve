@@ -5,6 +5,7 @@ export type RequestTraceModel = {
   cards: Array<{
     label: string;
     value: string;
+    isUserContent?: boolean;
   }>;
 };
 
@@ -38,7 +39,8 @@ export function presentRequestTrace(submission: QuerySubmissionState): RequestTr
     cards: [
       {
         label: "Submitted Query",
-        value: submission.lastSubmittedQuery || "No query submitted in this session yet."
+        value: submission.lastSubmittedQuery || "No query submitted in this session yet.",
+        isUserContent: Boolean(submission.lastSubmittedQuery)
       },
       {
         label: "Requested Mode",

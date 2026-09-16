@@ -1,3 +1,6 @@
+"use client";
+
+import { useLocale } from "@/lib/locale";
 import type { MemorySnapshot } from "@/lib/plugin-types";
 
 type MemoryThemePanelProps = {
@@ -18,14 +21,15 @@ function toneForWeight(weight: number): string {
 }
 
 export function MemoryThemePanel({ snapshot, compact = false }: MemoryThemePanelProps) {
+  const { ui } = useLocale();
   return (
     <section className={`grid gap-4 ${compact ? "grid-cols-1" : "lg:grid-cols-2"}`}>
       <div className="dashboard-panel rounded-[1.5rem] p-5">
         <div className="space-y-2">
-          <p className="dashboard-kicker">Priority Keywords</p>
-          <h2 className="dashboard-section-title">What the memory field weights most</h2>
+          <p className="dashboard-kicker">{ui("Priority Keywords")}</p>
+          <h2 className="dashboard-section-title">{ui("What the memory field weights most")}</h2>
           <p className="dashboard-subcopy">
-            Weighted from visible structured memories rather than direct LLM parameter state.
+            {ui("Weighted from visible structured memories rather than direct LLM parameter state.")}
           </p>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -36,17 +40,17 @@ export function MemoryThemePanel({ snapshot, compact = false }: MemoryThemePanel
               </span>
             ))
           ) : (
-            <p className="dashboard-empty-copy">No visible keyword priorities yet.</p>
+            <p className="dashboard-empty-copy">{ui("No visible keyword priorities yet.")}</p>
           )}
         </div>
       </div>
 
       <div className="dashboard-panel rounded-[1.5rem] p-5">
         <div className="space-y-2">
-          <p className="dashboard-kicker">Surfaced Themes</p>
-          <h2 className="dashboard-section-title">How those memories cluster conceptually</h2>
+          <p className="dashboard-kicker">{ui("Surfaced Themes")}</p>
+          <h2 className="dashboard-section-title">{ui("How those memories cluster conceptually")}</h2>
           <p className="dashboard-subcopy">
-            Themes are derived locally from structured memory content and keywords.
+            {ui("Themes are derived locally from structured memory content and keywords.")}
           </p>
         </div>
         <div className={`mt-4 ${compact ? "space-y-2.5" : "space-y-3"}`}>
@@ -58,15 +62,15 @@ export function MemoryThemePanel({ snapshot, compact = false }: MemoryThemePanel
               >
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-slate-700">{theme.label}</p>
-                  <span className="dashboard-status-pill">{theme.memoryIds.length} memories</span>
+                  <span className="dashboard-status-pill">{theme.memoryIds.length} {ui("memories")}</span>
                 </div>
                 <p className="mt-2 text-xs leading-6 text-slate-500">
-                  Weighted signal: {theme.weight.toFixed(2)}
+                  {ui("Weighted signal:")} {theme.weight.toFixed(2)}
                 </p>
               </div>
             ))
           ) : (
-            <p className="dashboard-empty-copy">No visible themes yet.</p>
+            <p className="dashboard-empty-copy">{ui("No visible themes yet.")}</p>
           )}
         </div>
       </div>

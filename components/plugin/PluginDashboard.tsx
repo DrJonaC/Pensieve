@@ -1,12 +1,14 @@
 "use client";
 
+import { useLocale } from "@/lib/locale";
+import { redactSensitiveText } from "@/lib/privacy";
+
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { MemoryInspectorPanel } from "@/components/plugin/MemoryInspectorPanel";
 import { MemoryListPanel } from "@/components/plugin/MemoryListPanel";
 import { MemorySnapshotPanel } from "@/components/plugin/MemorySnapshotPanel";
 import { MemoryThemePanel } from "@/components/plugin/MemoryThemePanel";
-import { getMemoryVectorCount } from "@/lib/providers/local-memory-provider";
 import { resolveHostAdapter } from "@/lib/hosts/resolve-host-adapter";
 import type {
   DashboardState,
@@ -26,6 +28,7 @@ const initialState: DashboardState = {
 };
 
 export function PluginDashboard() {
+  const { ui } = useLocale();
   const searchParams = useSearchParams();
   const hostAdapter = useMemo(
     () => resolveHostAdapter(searchParams.get("host")),
@@ -123,7 +126,7 @@ export function PluginDashboard() {
 
   const selectedMemory =
     state.memories.find((memory) => memory.id === state.selectedMemoryId) ?? null;
-  const vectorCount = useMemo(() => getMemoryVectorCount(), []);
+  const vectorCount = state.memories.filter(memory => memory.status !== "hidden").length;
 
   const handleAction = async (action: MemoryAction) => {
     try {
@@ -145,13 +148,12 @@ export function PluginDashboard() {
       <section className="dashboard-panel plugin-header-shell rounded-[1.6rem] p-4">
         <div className="plugin-header-shell__top">
           <div className="plugin-meta plugin-meta--sidebar">
-            <p className="plugin-meta__eyebrow">Host-Agnostic Plugin Core</p>
+            <p className="plugin-meta__eyebrow">{ui("Host-Agnostic Plugin Core")}</p>
             <h1 className="plugin-meta__title plugin-meta__title--sidebar">Pensieve</h1>
             <p className="plugin-meta__copy plugin-meta__copy--sidebar">
-              Structured memory dashboard for reviewing captured-memory artifacts and lightly
-              governing their state.
+              {ui("Structured memory dashboard for reviewing captured-memory artifacts and lightly governing their state.")}
             </p>
-            <p className="plugin-host-copy">{hostContext.description}</p>
+            <p className="plugin-host-copy">{ui(hostContext.description)}</p>
           </div>
           <div className="plugin-header-shell__badge">
             <div className="flex items-center gap-2">
@@ -162,37 +164,37 @@ export function PluginDashboard() {
                 className="dashboard-toggle"
                 aria-pressed={isExpanded}
               >
-                {isExpanded ? "Collapse" : "Expand"}
+                {isExpanded ? ui("Collapse") : ui("Expand")}
               </button>
             </div>
           </div>
         </div>
 
         <div className="plugin-status-rail">
-          <StatusRailItem label="Mode" value="Dashboard" />
-          <StatusRailItem label="Host" value={hostContext.displayName} />
-          <StatusRailItem label="Memories" value={String(state.snapshot?.total ?? state.memories.length)} />
-          <StatusRailItem label="Vectors" value={String(vectorCount)} />
+          <StatusRailItem label={ui("Mode")} value={ui("Dashboard")} />
+          <StatusRailItem label={ui("Host")} value={hostContext.displayName} />
+          <StatusRailItem label={ui("Memories")} value={String(state.snapshot?.total ?? state.memories.length)} />
+          <StatusRailItem label={ui("Searchable")} value={String(vectorCount)} />
           <StatusRailItem
-            label="Selected"
-            value={selectedMemory ? selectedMemory.id.replace("memory-", "M-") : "None"}
+            label={ui("Selected")}
+            value={selectedMemory ? selectedMemory.id.replace("memory-", "M-") : ui("None")}
           />
         </div>
 
         <div className="plugin-capability-row">
-          <CapabilityPill label={hostContext.capabilities.sidebar ? "Sidebar-ready" : "Windowed"} />
+          <CapabilityPill label={hostContext.capabilities.sidebar ? ui("Sidebar-ready") : ui("Windowed")} />
           <CapabilityPill
-            label={hostContext.capabilities.providerInjection ? "Provider injection" : "Manual provider"}
+            label={hostContext.capabilities.providerInjection ? ui("Provider injection") : ui("Manual provider")}
           />
           <CapabilityPill
-            label={hostContext.capabilities.localPathsVisible ? "Local paths visible" : "Paths abstracted"}
+            label={hostContext.capabilities.localPathsVisible ? ui("Local paths visible") : ui("Paths abstracted")}
           />
         </div>
       </section>
 
       {state.error ? (
         <div className="dashboard-panel rounded-[1.5rem] border border-rose-200 bg-rose-50/80 p-4 text-sm text-rose-700">
-          {state.error}
+          {ui("Error")}: {redactSensitiveText(state.error)}
         </div>
       ) : null}
 
@@ -238,7 +240,7 @@ export function PluginDashboard() {
 
       {state.isLoading ? (
         <div className="dashboard-panel rounded-[1.5rem] p-4 text-sm text-slate-500 plugin-sidebar-status">
-          Hydrating local memory artifacts...
+          {ui("Hydrating local memory artifacts...")}
         </div>
       ) : null}
     </div>
@@ -265,19 +267,20 @@ function CollapsedInspectorHint({
   selectedMemoryId: string | null;
   onExpand: () => void;
 }) {
+  const { ui, t } = useLocale();
   return (
     <section className="dashboard-panel rounded-[1.5rem] p-4">
-      <p className="dashboard-kicker">Inspector</p>
+      <p className="dashboard-kicker">{ui("Inspector")}</p>
       <p className="mt-2 text-sm font-medium text-slate-700">
         {selectedMemoryId
-          ? `Memory ${selectedMemoryId.replace("memory-", "M-")} is selected.`
-          : "Select a memory to inspect its trace and controls."}
+          ? t(`Memory ${selectedMemoryId.replace("memory-", "M-")} is selected.`, `已选择记忆 ${selectedMemoryId.replace("memory-", "M-")}。`)
+          : ui("Select a memory to inspect its trace and controls.")}
       </p>
       <p className="dashboard-subcopy mt-2">
-        Expand the sidebar to review storage paths, source traces, and lightweight governance actions.
+        {ui("Expand the sidebar to review storage paths, source traces, and lightweight governance actions.")}
       </p>
       <button type="button" onClick={onExpand} className="dashboard-toggle mt-4">
-        Expand Inspector
+        {ui("Expand Inspector")}
       </button>
     </section>
   );

@@ -1,4 +1,5 @@
 import { type CDVResult } from "./cdv.ts";
+import { redactSensitiveText } from "./privacy.ts";
 import { getRelativeTime, type ScoredMemory } from "./memory.ts";
 import { type DashboardMemoryRecord } from "./pensieve-dashboard-core.ts";
 import {
@@ -90,10 +91,10 @@ export function presentQueryMemoryItem(input: {
     activationCount: memory.activation_count,
     infoTypeLabel: startCase(memory.info_type),
     sourceLabel: startCase(memory.origin_tp),
-    explanation,
+    explanation: explanation === undefined ? undefined : redactSensitiveText(explanation),
     priorityLabel: priorityIndex ? `Priority ${priorityIndex}` : undefined,
     cdvLabel: toCDVLabel(cdv),
-    cdvReason: cdv?.is_violation ? cdv.reason : undefined
+    cdvReason: cdv?.is_violation ? redactSensitiveText(cdv.reason) : undefined
   };
 }
 

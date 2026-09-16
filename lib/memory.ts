@@ -99,7 +99,7 @@ export function tokenizeInput(input: string): string[] {
   return input
     .toLowerCase()
     .split(/\s+/)
-    .map((token) => token.replace(/[^a-z0-9-]/g, ""))
+    .map((token) => token.replace(/[^\p{L}\p{N}-]/gu, ""))
     .filter(Boolean);
 }
 

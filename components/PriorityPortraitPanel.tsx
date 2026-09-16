@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocale } from "@/lib/locale";
+
 import { type PriorityPortrait } from "@/lib/pensieve-priority-portrait";
 
 type PriorityPortraitPanelProps = {
@@ -26,21 +28,22 @@ export function PriorityPortraitPanel({
   subtitle = "Weighted keywords and surfaced themes distilled from the current memory field.",
   showBuckets = false
 }: PriorityPortraitPanelProps) {
+  const { ui } = useLocale();
   return (
     <section className="rounded-[1.8rem] border border-white/10 bg-white/[0.04] p-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/60">Priority Portrait</p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">{title}</h2>
+          <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/60">{ui("Priority Portrait")}</p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">{ui(title)}</h2>
         </div>
-        <p className="max-w-2xl text-sm leading-7 text-slate-400">{subtitle}</p>
+        <p className="max-w-2xl text-sm leading-7 text-slate-400">{ui(subtitle)}</p>
       </div>
 
       {showBuckets ? (
         <div className="mt-5 grid gap-4 md:grid-cols-4">
           {portrait.buckets.map((item) => (
             <div key={item.label} className="rounded-[1.4rem] border border-white/10 bg-slate-950/40 p-4">
-              <p className="text-[11px] uppercase tracking-[0.24em] text-cyan-100/60">{item.label}</p>
+              <p className="text-[11px] uppercase tracking-[0.24em] text-cyan-100/60">{ui(item.label)}</p>
               <p className="mt-3 text-2xl font-semibold text-white">{item.value}</p>
             </div>
           ))}
@@ -49,7 +52,7 @@ export function PriorityPortraitPanel({
 
       <div className={`grid gap-4 ${showBuckets ? "mt-5 lg:grid-cols-[0.95fr_1.05fr]" : "mt-5 lg:grid-cols-[1fr_1fr]"}`}>
         <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/40 p-4">
-          <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/60">Priority Keywords</p>
+          <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/60">{ui("Priority Keywords")}</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {portrait.keywords.length > 0 ? (
               portrait.keywords.map((keyword) => (
@@ -62,14 +65,14 @@ export function PriorityPortraitPanel({
               ))
             ) : (
               <p className="text-sm leading-7 text-slate-400">
-                Priority keywords will appear after the memory field becomes active.
+                {ui("Priority keywords will appear after the memory field becomes active.")}
               </p>
             )}
           </div>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/40 p-4">
-          <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/60">Surfaced Themes</p>
+          <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/60">{ui("Surfaced Themes")}</p>
           <div className="mt-4 grid gap-3">
             {portrait.themes.length > 0 ? (
               portrait.themes.map((theme) => (
@@ -77,14 +80,13 @@ export function PriorityPortraitPanel({
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-medium text-white">{theme.label}</p>
                     <span className="text-xs uppercase tracking-[0.18em] text-cyan-100/60">
-                      {theme.memoryCount} memories
-                    </span>
+                      {theme.memoryCount} {ui("memories")} </span>
                   </div>
                 </div>
               ))
             ) : (
               <p className="text-sm leading-7 text-slate-400">
-                Themes will emerge when visible memories remain in the active field.
+                {ui("Themes will emerge when visible memories remain in the active field.")}
               </p>
             )}
           </div>

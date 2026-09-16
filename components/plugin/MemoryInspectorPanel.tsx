@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocale } from "@/lib/locale";
+
 import type {
   MemoryAction,
   MemoryTrace,
@@ -19,10 +21,11 @@ export function MemoryInspectorPanel({
   compact = false,
   onAction
 }: MemoryInspectorPanelProps) {
+  const { ui, t } = useLocale();
   if (!memory) {
     return (
       <section className="dashboard-panel rounded-[1.5rem] p-5">
-        <p className="dashboard-empty-copy">Select a memory to inspect its trace and controls.</p>
+        <p className="dashboard-empty-copy">{ui("Select a memory to inspect its trace and controls.")}</p>
       </section>
     );
   }
@@ -30,39 +33,38 @@ export function MemoryInspectorPanel({
   return (
     <section className="dashboard-panel rounded-[1.5rem] p-5">
       <div className="space-y-2">
-        <p className="dashboard-kicker">Memory Inspector</p>
-        <h2 className="dashboard-section-title">Trace, storage path, and lightweight controls</h2>
+        <p className="dashboard-kicker">{ui("Memory Inspector")}</p>
+        <h2 className="dashboard-section-title">{ui("Trace, storage path, and lightweight controls")}</h2>
         <p className="dashboard-subcopy">
-          This panel reflects the structured memory layer built from captured events, not direct
-          parameter memory inside the model.
+          {ui("This panel reflects the structured memory layer built from captured events, not direct parameter memory inside the model.")}
         </p>
       </div>
 
       <div className="mt-4 rounded-2xl border border-slate-200/70 bg-white/76 p-4 shadow-sm">
         <p className={`${compact ? "text-[0.82rem] leading-5" : "text-sm leading-6"} font-semibold text-slate-800`}>{memory.content}</p>
         <div className="mt-3 grid gap-2 text-xs leading-6 text-slate-500">
-          <p>Status: {memory.status}</p>
-          <p>Pinned: {memory.pinned ? "yes" : "no"}</p>
-          <p>Storage path: {memory.storagePath}</p>
-          <p>Last activated: {memory.lastActivatedAt ?? "not yet activated"}</p>
-          <p>Info type: {memory.metadata?.infoType ?? "unspecified"}</p>
-          <p>Origin context: {memory.metadata?.originContext ?? "unspecified"}</p>
+          <p>{ui("Status:")} {ui(memory.status)}</p>
+          <p>{ui("Pinned:")} {memory.pinned ? ui("yes") : ui("no")}</p>
+          <p>{ui("Storage path:")} {memory.storagePath}</p>
+          <p>{ui("Last activated:")} {memory.lastActivatedAt ?? ui("not yet activated")}</p>
+          <p>{ui("Info type:")} {ui(memory.metadata?.infoType ?? "unspecified")}</p>
+          <p>{ui("Origin context:")} {memory.metadata?.originContext ?? ui("unspecified")}</p>
         </div>
       </div>
 
       <div className={`mt-4 flex flex-wrap ${compact ? "gap-1.5" : "gap-2"}`}>
         <ActionButton
-          label={memory.pinned ? "Unpin" : "Pin"}
+          label={memory.pinned ? ui("Unpin") : ui("Pin")}
           compact={compact}
           onClick={() => onAction({ type: "pin", memoryId: memory.id })}
         />
         <ActionButton
-          label={memory.status === "softened" ? "Unsoften" : "Soften"}
+          label={memory.status === "softened" ? ui("Unsoften") : ui("Soften")}
           compact={compact}
           onClick={() => onAction({ type: "soften", memoryId: memory.id })}
         />
         <ActionButton
-          label={memory.status === "hidden" ? "Restore" : "Hide"}
+          label={memory.status === "hidden" ? ui("Restore") : ui("Hide")}
           compact={compact}
           onClick={() =>
             onAction({
@@ -74,14 +76,14 @@ export function MemoryInspectorPanel({
       </div>
 
       <div className="mt-5 rounded-2xl border border-slate-200/70 bg-white/76 p-4 shadow-sm">
-        <p className="dashboard-meta-note">Trace</p>
+        <p className="dashboard-meta-note">{ui("Trace")}</p>
         <div className="mt-3 grid gap-2 text-xs leading-6 text-slate-500">
-          <p>Source event ids: {(trace?.sourceEventIds ?? memory.sourceEventIds).join(", ")}</p>
-          <p>Source paths: {(trace?.sourcePaths ?? memory.sourcePaths).join(" | ")}</p>
+          <p>{ui("Source event ids:")} {(trace?.sourceEventIds ?? memory.sourceEventIds).join(", ")}</p>
+          <p>{ui("Source paths:")} {(trace?.sourcePaths ?? memory.sourcePaths).join(" | ")}</p>
           <p>
-            Extraction note:{" "}
+            {ui("Extraction note:")}{" "}
             {trace?.extractionNotes ??
-              "Structured from captured events and stored in the local Pensieve memory store."}
+              t("Stored in the local Pensieve memory store.", "保存在 Pensieve 本地记忆库中。")}
           </p>
         </div>
       </div>

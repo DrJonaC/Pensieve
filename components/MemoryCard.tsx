@@ -1,3 +1,7 @@
+"use client";
+
+import { useLocale } from "@/lib/locale";
+import { localizeRelativeTime } from "@/lib/ui-copy";
 import { type CDVResult } from "@/lib/cdv";
 import { ScoredMemory } from "@/lib/memory";
 import { presentQueryMemoryItem } from "@/lib/pensieve-memory-item-presenter";
@@ -27,6 +31,7 @@ export function MemoryCard({
   onPin,
   priorityIndex
 }: MemoryCardProps) {
+  const { ui, t, language } = useLocale();
   const presented = presentQueryMemoryItem({
     memory,
     explanation,
@@ -42,35 +47,35 @@ export function MemoryCard({
           <div className="flex flex-wrap items-center gap-2">
             {presented.priorityLabel ? (
               <span className="rounded-full border border-cyan-300/30 bg-cyan-300/[0.12] px-2.5 py-1 text-[11px] uppercase tracking-[0.2em] text-cyan-50">
-                {presented.priorityLabel}
+                {t(`Priority ${priorityIndex}`, `优先级 ${priorityIndex}`)}
               </span>
             ) : null}
-            <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/60">{presented.statusLabel}</p>
+            <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/60">{ui(presented.statusLabel)}</p>
             {presented.pinned ? (
               <span className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2 py-1 text-[11px] uppercase tracking-[0.2em] text-cyan-100">
-                Pinned
+                {ui("Pinned")}
               </span>
             ) : null}
             {showCDVBadge && cdv?.severity === "warning" ? (
               <span className="rounded-full border border-orange-500/40 bg-orange-500/15 px-2.5 py-1 text-[11px] font-medium text-orange-300">
-                Context Drift
+                {ui("Context Drift")}
               </span>
             ) : null}
             {showCDVBadge && cdv?.severity === "critical" ? (
               <span className="rounded-full border border-rose-400/50 bg-rose-400/20 px-2.5 py-1 text-[11px] font-medium text-rose-200">
-                CDV Violation
+                {ui("CDV Violation")}
               </span>
             ) : null}
             {cdv && !cdv.is_violation ? (
               <span className="rounded-full border border-emerald-400/40 bg-emerald-400/15 px-2.5 py-1 text-[11px] font-medium text-emerald-300">
-                CDV Clean
+                {ui("CDV Clean")}
               </span>
             ) : null}
           </div>
           <h3 className="mt-3 text-2xl font-semibold leading-8 text-white">{presented.title}</h3>
         </div>
         <span className={`rounded-full border px-3 py-1 text-xs font-medium ${riskStyles[memory.risk_level]}`}>
-          {presented.riskLabel}
+          {ui(presented.riskLabel)}
         </span>
       </div>
 
@@ -87,7 +92,7 @@ export function MemoryCard({
 
       <div className="mt-5">
         <div className="mb-2 flex items-center justify-between text-xs text-slate-400">
-          <span>Influence</span>
+          <span>{ui("Influence")}</span>
           <span>{presented.scorePercent}%</span>
         </div>
         <div className="h-2 rounded-full bg-slate-900">
@@ -99,28 +104,28 @@ export function MemoryCard({
       </div>
 
       <div className="mt-5 rounded-[1.35rem] border border-white/10 bg-white/[0.04] p-4">
-        <p className="text-[11px] uppercase tracking-[0.24em] text-cyan-100/60">Why It Surfaced</p>
+        <p className="text-[11px] uppercase tracking-[0.24em] text-cyan-100/60">{ui("Why It Surfaced")}</p>
         <p className="mt-3 text-sm leading-7 text-slate-300">{presented.explanation}</p>
       </div>
 
       {showCDVBadge ? (
         <div className="mt-3 rounded-[1.35rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-cyan-100/60">Context Drift Analysis</p>
+          <p className="text-[11px] uppercase tracking-[0.24em] text-cyan-100/60">{ui("Context Drift Analysis")}</p>
           <p className="mt-3 text-sm leading-7 text-slate-300">{presented.cdvReason}</p>
         </div>
       ) : null}
 
       <div className="mt-4 grid gap-3 text-sm text-slate-300 md:grid-cols-3">
         <div className="rounded-[1.1rem] border border-white/10 bg-white/[0.04] px-4 py-3">
-          <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-100/60">Influence</p>
+          <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-100/60">{ui("Influence")}</p>
           <p className="mt-2 text-white">{presented.scorePercent}%</p>
         </div>
         <div className="rounded-[1.1rem] border border-white/10 bg-white/[0.04] px-4 py-3">
-          <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-100/60">Last Activated</p>
-          <p className="mt-2 text-white">{presented.lastActivatedLabel}</p>
+          <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-100/60">{ui("Last Activated")}</p>
+          <p className="mt-2 text-white">{localizeRelativeTime(language, presented.lastActivatedLabel)}</p>
         </div>
         <div className="rounded-[1.1rem] border border-white/10 bg-white/[0.04] px-4 py-3">
-          <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-100/60">Activation Count</p>
+          <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-100/60">{ui("Activation Count")}</p>
           <p className="mt-2 text-white">{presented.activationCount}</p>
         </div>
       </div>
@@ -131,21 +136,21 @@ export function MemoryCard({
           onClick={() => onSoften(memory.id)}
           className="rounded-full border border-cyan-300/20 bg-cyan-300/[0.06] px-3 py-2 text-xs text-white transition hover:border-cyan-300/40 hover:bg-cyan-300/10"
         >
-          {memory.status === "softened" ? "Unsoften" : "Soften"}
+          {memory.status === "softened" ? ui("Unsoften") : ui("Soften")}
         </button>
         <button
           type="button"
           onClick={() => onForget(memory.id)}
           className="rounded-full border border-rose-400/20 bg-rose-400/10 px-3 py-2 text-xs text-rose-100 transition hover:border-rose-400/40 hover:bg-rose-400/20"
         >
-          Hide
+          {ui("Hide")}
         </button>
         <button
           type="button"
           onClick={() => onPin(memory.id)}
           className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-2 text-xs text-cyan-100 transition hover:border-cyan-300/55 hover:bg-cyan-300/20"
         >
-          {memory.pinned ? "Unpin" : "Pin"}
+          {memory.pinned ? ui("Unpin") : ui("Pin")}
         </button>
       </div>
     </article>

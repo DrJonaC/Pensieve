@@ -2,211 +2,143 @@
 
 # Pensieve：看见 AI 如何记住你
 
-### 看见 AI 留下了哪些记忆，理解记忆，治理记忆。
+**看见记忆，迁移记忆，治理记忆。**
 
-一个本地优先、宿主无关的 Dashboard，让结构化 AI 记忆变得可见、可理解、可治理。
+本地优先的结构化 AI 记忆工作台，提供可扩展的插件式仪表盘。
 
-[English](./README.md) · [简体中文](./README.zh-CN.md) · [安装指南](./CODEX_PLUGIN_INSTALL.md) · [架构设计](./PENSIEVE_DASHBOARD_PLUGIN_DESIGN.md)
+[English](README.md) · [简体中文](README.zh-CN.md) · [迁移指南](docs/MEMORY_MIGRATION.md) · [隐私边界](docs/PRIVACY.md)
 
-![MIT License](https://img.shields.io/badge/license-MIT-718b84?style=flat-square)
-![Next.js 15](https://img.shields.io/badge/Next.js-15.3-263d38?style=flat-square&logo=nextdotjs&logoColor=white)
-![TypeScript Strict](https://img.shields.io/badge/TypeScript-strict-789fa3?style=flat-square&logo=typescript&logoColor=white)
-![Status](https://img.shields.io/badge/status-research%20preview-a8bab4?style=flat-square)
+![MIT](https://img.shields.io/badge/license-MIT-718b84?style=flat-square)
+![Next.js](https://img.shields.io/badge/Next.js-15.5-263d38?style=flat-square)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-789fa3?style=flat-square)
+![Status](https://img.shields.io/badge/status-local%20research%20preview-a8bab4?style=flat-square)
 
-![Pensieve 主视觉：揭示 AI 如何记住你的魔法记忆盆](./docs/assets/pensieve-hero.png)
+![Pensieve 概念插画，非产品界面截图](docs/assets/pensieve-hero.png)
 
 </div>
 
-## 项目概览
+## 为什么做 Pensieve？
 
-AI 不只是在回答你。随着持续交互，它会逐步形成关于你的工作记忆：偏好、项目、习惯，以及可能敏感的上下文。这些记忆会影响未来回答，但用户通常既看不见它们如何形成，也不知道它们为何被唤起，更无法确认哪些内容应该继续保留。
+记忆会影响助手的回答，但用户需要的不只是一个隐藏的存储层：还需要知道保存了什么、
+为何被召回，以及如何修改它。Pensieve 将**可观测、可迁移、可治理**整合为本地界面。
 
-**Pensieve 让你看见 AI 如何记住你。** 它把隐藏的 Memory State 转化为用户可以理解和操作的控制界面：通过 Provider 读取结构化记忆，展示哪些内容最突出，保护敏感信息，并允许用户执行可逆治理。Governance Bridge 随后把这些决定编译成可审阅的 Markdown 报告、确定性的 JSON Manifest，以及可验证的 Provider Receipt。
+Pensieve 管理的是**外部结构化记忆**，不是模型权重或内部注意力。
+当前适配器使用 Pensieve 自己的记忆库，不会自动读取或修改 ChatGPT、Claude、
+Codex 或 Claude Code 的私有记忆。
 
-Pensieve 不修改模型权重。它治理的是影响未来上下文的外部记忆记录、状态和检索行为。
+## 本次升级
 
-## 产品全貌
-
-| 层级 | Pensieve 展示的内容 |
+| 能力 | 用户可以做什么 |
 | --- | --- |
-| **Snapshot** | 记忆总数，以及 active、pinned、softened、hidden、高风险数量 |
-| **Priority** | 从可见记忆中确定性派生的关键词权重与主题 |
-| **Memory Units** | 包含来源、风险、时间、激活次数与状态的结构化记忆碎片 |
-| **Governance** | 可逆的 `pin`、`soften`、`hide`、`restore` 操作 |
-| **Write-back** | Markdown 报告、JSON Manifest、目标状态执行与 Receipt 验证 |
-| **Protection** | 面向敏感记忆的 Full、Soft-mask、Protected 显示层级 |
+| 无需提问的记忆管理 | 导入带版本的 JSON 或纯文本，先预览新增、重复和冲突，再确认 |
+| 可迁移备份 | 按范围导出 JSON 或文本；JSON 保留元数据 |
+| 编辑与治理 | 编辑内容和关键词，置顶、弱化、隐藏、恢复或确认删除，实际影响检索 |
+| 持久化保护 | 版本冲突检查、独占写锁、原子替换和修改前备份 |
+| 中英文界面 | 切换界面语言，不自动翻译记忆和生成内容 |
+| 凭据遮蔽 | 在模型输入、生成文本、报告和错误中，用 `[REDACTED:...]` 替换可识别凭据 |
+| 发布保护 | 数据、备份和密钥不进入发布包；开发诊断路由已移除 |
 
-## 记忆治理闭环
+## 页面导览
 
-大多数 Memory 产品停留在存储或召回。Pensieve 关注的是从**观察**到**用户控制权**之间缺失的闭环。
+| 路由 | 用途 |
+| --- | --- |
+| `/` | 产品概览、当前会话与主要入口 |
+| `/memories` | 导入 → 预览 → 确认 → 管理 → 导出 |
+| `/guide` | 概念与操作说明 |
+| `/user-view` | 优先关键词、主题和排序后的记忆卡片 |
+| `/surface-model` | 模拟/在线提问、回答、解释、请求追踪和模拟热力图 |
+| `/dashboard` | 无需提问的仪表盘与模拟宿主预览 |
+| `/plugin` | 宿主适配器预览，不代表已连接宿主原生记忆 |
 
-![Pensieve 记忆治理闭环](./docs/assets/governance-loop.svg)
-
-1. Pensieve 读取当前结构化 Memory Field。
-2. 用户检查优先级、风险与来源。
-3. 用户做出可逆治理决定。
-4. Pensieve 将结果编译成 Markdown 与 JSON。
-5. Provider 把目标状态应用到实际 Memory Store。
-6. Pensieve 通过逐条 Receipt 验证执行结果。
-
-报告基于状态差异生成，而不是回放 UI Event。同一报告重复执行会收敛到相同目标状态，不会重复制造副作用。
-
-## 系统架构
-
-Pensieve 被刻意拆分为一个小型、宿主无关的内核，以及可替换的集成边界。
-
-![Pensieve 宿主无关架构](./docs/assets/architecture.svg)
-
-- **Dashboard Core** 负责 Snapshot、排序、关键词、主题与显示状态。
-- **MemoryProvider** 负责真实 Memory State 的读取与变更。
-- **Governance Bridge** 把用户决定转换为可移植的报告、Manifest 与 Receipt。
-- **Host Adapter** 连接侧边栏生命周期与运行时事件，不把宿主假设泄漏进内核。
-- **Local Repository** 提供文件存储的参考实现，用于本地开发与验证。
-
-Provider 接口有意保持精简：
-
-```ts
-interface MemoryProvider {
-  getSnapshot(): Promise<DashboardSnapshot>
-  getMemories(): Promise<DashboardMemoryRecord[]>
-  applyAction(action: DashboardAction): Promise<DashboardActionResult>
-
-  getGovernanceStatus?(): Promise<GovernanceBridgeStatus>
-  generateGovernanceReport?(): Promise<GovernanceReportArtifact>
-  applyGovernanceReport?(reportId: string): Promise<GovernanceReceipt>
-}
-```
-
-只读 Provider 可以只实现读取能力。真实 Codex、Claude Code 或其他 Memory 系统可以增加 mutation 和 governance 能力，而无需修改 Dashboard。
-
-## 结构化 Memory 模型
-
-Pensieve 将 Memory 定义为语义记录，而不是运行时 Event。
-
-```ts
-type MemoryUnit = {
-  id: string
-  content: string
-  keywords: string[]
-  priority_score: number
-  risk_level: "low" | "medium" | "high"
-  status: "active" | "softened" | "hidden"
-  pinned: boolean
-  created_at: string
-  last_activated: string
-  activation_count: number
-}
-```
-
-Event 描述系统如何与记忆交互；Memory Unit 才是被存储、观察和治理的语义对象。
+![使用内置示例数据的 Pensieve 中文首页](docs/assets/home-overview-zh.png)
 
 ## 快速开始
 
-### 启动本地 Dashboard
+使用 Node.js 22.18+，CI 使用 Node 22 LTS。
 
 ```bash
 git clone https://github.com/DrJonaC/Pensieve.git
 cd Pensieve
-npm install
+npm ci
 npm run dev
 ```
 
-打开 `http://localhost:3000/dashboard`。
+打开 **http://127.0.0.1:3000/memories**。首次运行会创建包含内置示例的本地记忆库。
+记忆管理与模拟模式不需要 API Key。
 
-本地预览使用：
+如需在线模式，在项目根目录创建 `.env.local`：
 
-- `data/pensieve-memory-records.json` 作为结构化记忆仓库
-- `/api/dashboard-memory` 处理读取和可逆治理动作
-- `/api/governance-report` 处理报告生成、Provider 执行与 Receipt
-
-运行时治理产物保存在本地并被 Git 忽略：
-
-```text
-data/pensieve-governance/
-  reports/
-  receipts/
+```dotenv
+OPENAI_API_KEY=your_api_key_here
 ```
 
-### 安装为 Codex 插件
+服务端使用 OpenAI Responses API。只有主动提交在线查询，才会发送经过凭据过滤的
+问题和选中记忆上下文。不要提交 `.env.local`；修改服务端配置后需重启应用。
 
 ```bash
-codex plugin add pensieve-dashboard-plugin@pensieve-local
+npm run build
+npm run start
 ```
 
-本地 Marketplace 与 Windows 配置步骤见 [CODEX_PLUGIN_INSTALL.md](./CODEX_PLUGIN_INSTALL.md)。重新安装后需要创建一个新的 Codex 任务，以加载更新后的插件元数据。
+开发与生产启动默认只监听本机。这是单用户应用，**没有公共服务所需的身份认证**；
+未增加访问控制前，不应直接暴露到公网。
 
-## 安全与治理语义
+## 技术路线
 
-记忆治理需要比普通“删除按钮”更严格的语义。
+```text
+JSON / 文本 → 校验与预览 → 共享文件记忆库
+                              ↓
+                   仪表盘 / 记忆管理 / 本地检索
+                              ↓
+                    模拟回答或服务端模型调用
+                              ↓
+                    回答 + 解释 + 模拟热力图
+```
 
-- `soften` 降低记忆优先级，但保留原始记录。
-- `hide` 抑制活跃召回，并且可以恢复。
-- `restore` 将隐藏记忆重新带回 Active Memory Field。
-- 高敏感记忆在界面和导出报告中都会使用 Protected Representation。
-- JSON Manifest 是机器执行的唯一事实源；Markdown 是人类审阅界面。
-- Provider 返回 Receipt 后，Pensieve 才会将报告标记为 Verified。
+- 默认数据文件为 `data/pensieve-memory-records.json`；可用 `PENSIEVE_DATA_DIR`
+  指定运行数据目录，治理报告也随之保存。
+- 检索使用根据当前记录重建的本地词法向量索引，再结合治理状态排序；
+  目前不是外部语义 Embedding 服务。
+- 隐藏或删除后不再召回，编辑后索引使用新内容。
+- Provider 将记忆访问与宿主适配、界面分离；治理报告通过 JSON 记录目标状态，
+  并通过回执检查执行结果。
+- 热力图是本地模拟，**不是模型真实注意力或因果贡献测量**；模型解释也不是证据本身。
 
-当前项目不会声称已经实现物理删除。生产级 Hard Delete 还需要 Provider 能力、二次确认、保留策略，以及可审计的删除证明。
+## 隐私与恢复
 
-## 研究与产品价值
+凭据过滤属于尽力检测，不能保证识别所有秘密或个人信息。目前覆盖常见令牌格式、
+带标签的密码/密钥、私钥和部分服务端秘密值。错误在遮蔽凭据后保留原文语言。
 
-Pensieve 将 LLM Memory 看作三个相互关联的问题：
+**原始记忆、来源记录、导出和备份仍是未加密的本地原始数据。** 分享前必须检查。
+删除只移除活跃记录，不会清除全部历史备份，不等于安全擦除；已泄露密钥仍需轮换。
 
-1. **Retrieval**：哪些记忆会进入未来上下文？
-2. **Observability**：用户能否理解系统当前认为哪些信息最重要？
-3. **Governance**：用户决定能否可靠地改变未来 Memory Behavior？
+导入默认合并，不静默覆盖冲突。JSON 往返保留来源、时间与治理状态；纯文本每个非空行
+作为一条记忆，不调用模型推断个人事实。导出格式不宣称原生兼容 ChatGPT/Claude 备份。
 
-因此 Pensieve 不只是 RAG Inspector、静态数据看板或聊天界面。它的产品贡献是可观察、可治理的 Memory Surface；系统贡献是 Provider 与 Host Boundary；研究贡献是从用户意图到 Memory State Verification 的可审计反馈闭环。
+详见[迁移与恢复指南](docs/MEMORY_MIGRATION.md)和[隐私保护说明](docs/PRIVACY.md)。
 
-## 当前范围
+## 验证
 
-Pensieve 当前以**本地 Codex-Compatible Plugin Source 与参考实现**的形式发布。
+```bash
+npm run typecheck
+npm test
+npm run test:package
+npm run build
+```
 
-已经实现：
+迁移与隐私升级已通过 72 项单元测试、4 项打包策略检查、严格类型检查及生产构建。
+浏览器测试在隔离库中使用合成数据验证记忆管理、语言切换和凭据遮蔽，不调用真实模型。
+测试入口见 `scripts/check-*-ui.mjs` 与[验证说明](docs/MEMORY_MIGRATION.md#verification)。
 
-- [x] 结构化 Memory Record 与本地持久化
-- [x] Query-free Memory Dashboard
-- [x] Priority Keywords 与 Surfaced Themes
-- [x] 面向敏感信息的治理显示层
-- [x] 可逆 Memory Actions
-- [x] Governance Report、Manifest 与 Receipt
-- [x] 宿主无关的 Provider 和 Adapter Contract
-- [x] 有上限的 Host Event Capture，保证本地预览稳定
+## 集成与研究价值
 
-下一阶段：
+产品重点是让用户能够理解和干预记忆；工程重点是共享持久化、Provider 与宿主边界。
+研究方向包括用户如何理解召回、治理如何改变后续检索，以及如何验证用户决策已生效。
 
-- [ ] 原生 Codex Memory Write-back Adapter
-- [ ] Claude Code Memory Provider
-- [ ] Provider 能力发现与权限交互
-- [ ] 基于策略的 Correction、Expiration 与 Hard Delete
-- [ ] 治理前后的 Retrieval Evaluation
-- [ ] 更多 Memory Store Adapter
-
-## 项目文档
-
-| 文档 | 内容 |
-| --- | --- |
-| [插件设计](./PENSIEVE_DASHBOARD_PLUGIN_DESIGN.md) | 产品边界、Provider 思路与交互决策 |
-| [视觉规范](./PENSIEVE_DASHBOARD_VISUAL_STYLE.md) | 可复用的莫兰迪绿青 Dashboard 语言 |
-| [Codex 安装](./CODEX_PLUGIN_INSTALL.md) | 本地 Marketplace 与插件配置 |
-| [Governance Bridge 更新](./docs/updates/2026-07-17-governance-bridge.md) | Report、Manifest、Receipt 与 Telemetry 更新 |
-| [项目复盘](./PENSIEVE_PROJECT_REVIEW.md) | Motivation、创新性与研究价值 |
-| [仓库展示](./docs/PENSIEVE_REPO_SHOWCASE.md) | GitHub、简历与项目展示文案 |
-
-## 参与贡献
-
-Pensieve 仍处于早期阶段，并刻意保持模块化。欢迎围绕 Memory Provider、治理语义、评估、隐私与宿主集成提交 Issue 或聚焦的 Pull Request。
-
-新的集成应当放在 Provider 或 Host Adapter 边界之后，不要直接耦合进 Dashboard Core。
+原生宿主记忆写回、语义 Embedding Provider、更全面的隐私分类和治理前后效果评估，
+仍属于后续工作。参阅[插件配置参考](CODEX_PLUGIN_INSTALL.md)、
+[架构设计](PENSIEVE_DASHBOARD_PLUGIN_DESIGN.md)和[项目展示](docs/PENSIEVE_REPO_SHOWCASE.md)。
 
 ## 开源协议
 
-项目采用 [MIT License](./LICENSE)。
-
----
-
-<div align="center">
-
-**看见 AI 如何记住你，并决定它下一步应该记住什么。**
-
-</div>
+[MIT](LICENSE)。欢迎围绕 Provider、治理、隐私与评估提交聚焦的贡献。

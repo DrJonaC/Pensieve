@@ -1,4 +1,4 @@
-import { getLocalMemoryProvider } from "../providers/local-memory-provider.ts";
+import { getPersistedMemoryProvider } from "../providers/persisted-memory-provider.ts";
 import type { HostAdapter } from "./host-adapter.ts";
 
 export function createCodexHostAdapter(): HostAdapter {
@@ -21,7 +21,7 @@ export function createCodexHostAdapter(): HostAdapter {
       };
     },
     getProvider() {
-      return getLocalMemoryProvider();
+      return getPersistedMemoryProvider();
     }
   };
 }

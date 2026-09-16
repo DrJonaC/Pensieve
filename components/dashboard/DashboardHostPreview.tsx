@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocale } from "@/lib/locale";
+
 import { useEffect, useMemo, useState } from "react";
 import { DashboardHostShell } from "@/components/dashboard/DashboardHostShell";
 import {
@@ -9,6 +11,7 @@ import {
 import { createMockPensieveHostAdapter } from "@/lib/pensieve-mock-host";
 
 export function DashboardHostPreview() {
+  const { ui, t } = useLocale();
   const hostAdapter = useMemo(() => createMockPensieveHostAdapter(), []);
   const [workspaceIndex, setWorkspaceIndex] = useState(1);
   const [eventCount, setEventCount] = useState(0);
@@ -36,22 +39,21 @@ export function DashboardHostPreview() {
       <div className="dashboard-panel rounded-[1.45rem] p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="dashboard-kicker">Mock Host</p>
-            <h3 className="dashboard-section-title mt-1">Sidebar adapter preview</h3>
+            <p className="dashboard-kicker">{ui("Mock Host")}</p>
+            <h3 className="dashboard-section-title mt-1">{ui("Sidebar adapter preview")}</h3>
             <p className="dashboard-subcopy mt-2 max-w-[28rem]">
-              This local host simulates sidebar visibility, expansion, workspace context, and event capture without
-              coupling Pensieve to any specific runtime.
+              {ui("This local host simulates sidebar visibility, expansion, workspace context, and event capture without coupling Pensieve to any specific runtime.")}
             </p>
           </div>
           <span className="dashboard-status-pill">
-            {hostAdapter.isCaptureLimitReached() ? "Capture limit reached" : "Capturing"}
+            {hostAdapter.isCaptureLimitReached() ? ui("Capture limit reached") : ui("Capturing")}
           </span>
         </div>
 
         <p className="dashboard-meta-note mt-3">
           {hostAdapter.isCaptureLimitReached()
-            ? `${eventCount} events buffered. Capture stops automatically at ${HOST_CAPTURE_LIMIT}.`
-            : `${eventCount} events buffered. Display refreshes every 500 captured events.`}
+            ? t(`${eventCount} events buffered. Capture stops automatically at ${HOST_CAPTURE_LIMIT}.`, `已缓存 ${eventCount} 个事件。达到 ${HOST_CAPTURE_LIMIT} 个时自动停止捕获。`)
+            : t(`${eventCount} events buffered. Display refreshes every 500 captured events.`, `已缓存 ${eventCount} 个事件。每捕获 500 个事件刷新显示。`)}
         </p>
 
         <div className="mt-4 flex flex-wrap gap-2.5">
@@ -64,7 +66,7 @@ export function DashboardHostPreview() {
               hostAdapter.setVisible(nextVisible);
             }}
           >
-            {hostVisible ? "Hide Sidebar" : "Show Sidebar"}
+            {hostVisible ? ui("Hide Sidebar") : ui("Show Sidebar")}
           </button>
           <button
             type="button"
@@ -78,7 +80,7 @@ export function DashboardHostPreview() {
               });
             }}
           >
-            {hostExpanded ? "Compact Host" : "Expand Host"}
+            {hostExpanded ? ui("Compact Host") : ui("Expand Host")}
           </button>
           <button
             type="button"
@@ -92,7 +94,7 @@ export function DashboardHostPreview() {
               });
             }}
           >
-            Rotate Workspace
+            {ui("Rotate Workspace")}
           </button>
           <button
             type="button"
@@ -102,14 +104,14 @@ export function DashboardHostPreview() {
               refreshEventCount();
             }}
           >
-            Clear Event Log
+            {ui("Clear Event Log")}
           </button>
           <button
             type="button"
             className="dashboard-action-button dashboard-action-button--accent"
             onClick={refreshEventCount}
           >
-            Refresh Event Count
+            {ui("Refresh Event Count")}
           </button>
         </div>
       </div>

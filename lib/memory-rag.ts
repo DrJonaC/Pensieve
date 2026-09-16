@@ -89,7 +89,7 @@ function clampScore(score: number): number {
 }
 
 function normalizeToken(token: string): string {
-  const cleaned = token.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  const cleaned = token.toLowerCase().replace(/[^\p{L}\p{N}-]/gu, "");
   if (cleaned.length <= 3) {
     return cleaned;
   }

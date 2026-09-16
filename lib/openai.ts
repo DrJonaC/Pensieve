@@ -1,4 +1,6 @@
 import OpenAI from "openai";
+import { redactGeneratedResponse, redactSensitiveText } from "./privacy.ts";
+import { configuredSecrets } from "./privacy-server.ts";
 import { detectCDV, type CDVMemoryUnit, type CDVResult, type TPLevel } from "@/lib/cdv";
 type GenerateResponseInput = {
   query: string;
@@ -115,6 +117,32 @@ function isStructuredResponse(value: unknown): value is GenerateResponseOutput {
 }
 
 export async function generateResponse(input: GenerateResponseInput): Promise<GenerateResponseOutput> {
+  const secrets = configuredSecrets();
+  const safeInput = {
+    ...input,
+    query: redactSensitiveText(input.query, secrets),
+    memories: input.memories.slice(0, 3).map((memory, index) => ({
+      ...memory,
+      id: `memory-${index + 1}`,
+      content: redactSensitiveText(memory.content, secrets),
+      origin_context: memory.origin_context ? redactSensitiveText(memory.origin_context, secrets) : undefined
+    }))
+  };
+  const result = await generateUnfilteredResponse(safeInput);
+  return redactGeneratedResponse({
+    ...result,
+    memory_explanations: result.memory_explanations.flatMap(item => {
+      const index = safeInput.memories.findIndex(memory => memory.id === item.memory_id);
+      return index < 0 ? [] : [{ ...item, memory_id: input.memories[index].id }];
+    }),
+    cdv_results: Object.fromEntries(Object.entries(result.cdv_results).flatMap(([id, value]) => {
+      const index = safeInput.memories.findIndex(memory => memory.id === id);
+      return index < 0 ? [] : [[input.memories[index].id, value]];
+    }))
+  }, secrets);
+}
+
+async function generateUnfilteredResponse(input: GenerateResponseInput): Promise<GenerateResponseOutput> {
   const cdv_results = buildCDVMap(input.query, input.memories);
 
   const client = getClient();
@@ -140,6 +168,7 @@ export async function generateResponse(input: GenerateResponseInput): Promise<Ge
               "You are helping a memory observability product answer a user query.",
               "Use the query and provided memories only.",
               "Do not hallucinate personal data that is not explicitly provided.",
+              "Never output credentials. Preserve [REDACTED:...] markers and do not infer their hidden values.",
               "Return valid JSON only.",
               'Format: {"answer":"string","summary":"string","memory_explanations":[{"memory_id":"string","why":"string"}]}.',
               "The answer should be 2-3 concise sentences.",

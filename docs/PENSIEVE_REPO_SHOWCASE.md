@@ -1,109 +1,60 @@
-# Pensieve Repo Showcase
+# Pensieve / 项目展示
 
-This document is the GitHub-facing positioning pack for Pensieve. It is meant to keep the repository presentation, resume language, and external project description aligned.
+**A local-first workspace for inspecting, migrating and governing structured AI memory.**
 
-## Recommended Positioning
+**看见 AI 如何记住你，并决定哪些记忆应被保留。**
 
-Use this as the default public framing:
+![Product overview with bundled sample data](assets/home-overview.png)
 
-**Pensieve is a plugin-ready dashboard for structured LLM memory observability and lightweight governance.**
+## Product Story / 产品逻辑
 
-Expanded version:
+Memory is useful only if people can understand and control it. Pensieve connects
+three steps: inspect what is stored, understand what a query retrieves, and apply
+changes that affect future retrieval. It works with structured external records,
+not hidden model parameters.
 
-**Pensieve turns LLM memory into a visible, interpretable, and gently governable surface. It combines structured memory retrieval, dashboard observability, and reversible user controls into a local plugin-ready system.**
+记忆不应只有“存下来”这一步。Pensieve 将查看、理解、迁移和治理连接起来，
+既能无需提问地整理记忆，也能通过查询观察被召回的内容。
 
-## GitHub About Text
+## Demo Walkthrough / 演示顺序
 
-Use one of these for the GitHub repository `About` field:
+1. Open Memory Library. Show which local library is being managed and the host-sync boundary.
+2. Paste a few synthetic notes. Preview duplicates/conflicts, then confirm import.
+3. Edit a memory and export selected records. Explain JSON metadata preservation.
+4. Ask a Mock query. Inspect keywords, themes and ranked memories; identify the heatmap as simulated.
+5. Hide a memory and query again. Show retrieval exclusion, then restore it.
+6. Switch English/Chinese. The interface changes; memory and answer languages do not.
+7. Use a synthetic credential in a demo query. Show `[REDACTED:...]` in generated text.
 
-### Option A
+Use only bundled or synthetic memories for public demos. Raw library views and
+downloads are not automatically sanitized. Never demonstrate using a real key.
 
-Structured LLM memory dashboard for observability, explainability, and lightweight governance.
+## Engineering Evidence / 工程证据
 
-### Option B
+- Shared file repository across memory management, queries and shipped providers.
+- Revision checks, exclusive writes, atomic replacement and pre-change backups.
+- Versioned imports, visible conflicts, metadata roundtrips and duplicate prevention.
+- Credential filtering around model input/output, errors and governance reports.
+- Strict TypeScript, focused tests, package privacy checks and production builds.
+- Browser acceptance for migration, bilingual navigation and privacy behavior.
 
-Plugin-ready dashboard for inspecting, interpreting, and governing structured LLM memory.
+## Research Questions / 研究问题
 
-### Option C
+- Can users accurately understand what the external memory system has retained?
+- Do keyword/theme layers make retrieval easier to interpret than a raw record list?
+- Does a governance action reliably change subsequent recall?
+- How should a product distinguish model explanations from measured attribution?
 
-Local memory observability plugin for making LLM memory visible, ranked, and reversible.
+These are evaluation directions, not claims of completed user studies or measured gains.
 
-Recommended:
+## Boundaries / 不能过度宣称
 
-`Option A`
+- No direct inspection of model weights or internal attention.
+- No automatic synchronization with private ChatGPT/Claude/Codex memories.
+- Current retrieval is lexical, not a deployed semantic embedding service.
+- Credential filtering is best-effort; raw exports/backups remain sensitive.
+- Local deletion is not secure erasure of historical copies.
+- This is a local research preview, not an authenticated multi-user cloud service.
 
-## Homepage Narrative
-
-The repository homepage should communicate three ideas in order:
-
-1. `Why it matters`
-   LLM memory is usually opaque, even when it shapes behavior.
-2. `What Pensieve does`
-   Pensieve makes that memory field visible through a dashboard rather than a hidden system layer.
-3. `Why this is more than a demo`
-   The project already has clean boundaries across memory structure, provider logic, host integration, and governance-aware display.
-
-## Core Selling Points
-
-Use these as the main project bullets for GitHub, portfolio pages, or short intros:
-
-- Makes structured LLM memory visible through a compact dashboard surface.
-- Treats memory as both a retrieval problem and a governance problem.
-- Supports lightweight, reversible controls instead of destructive editing.
-- Preserves clean engineering boundaries across dashboard core, provider interface, host adapter, and persistence.
-- Useful as both a product prototype and a research artifact for memory observability.
-
-## Resume Bullets
-
-Short version:
-
-- Built Pensieve, a plugin-ready dashboard for structured LLM memory observability, explainability, and lightweight governance.
-- Designed a host-agnostic memory plugin architecture with provider interfaces, local persistence, reversible actions, and governance-aware display tiers.
-- Extended a demo memory UI into an engineering-grade system that exposes what an LLM remembers, what becomes prominent, and how users can safely intervene.
-
-Tighter version:
-
-- Built a plugin-ready dashboard for structured LLM memory observability and governance.
-- Designed host-agnostic provider and adapter boundaries for memory visibility, persistence, and reversible control.
-- Turned opaque LLM memory state into an inspectable, ranked, and governable user-facing system.
-
-## Screenshot / Demo Ordering
-
-For GitHub screenshots or a short demo reel, show them in this order:
-
-1. `Full dashboard shell`
-   Gives the fastest understanding of the product form.
-2. `Snapshot + keywords + themes`
-   Shows that the dashboard is about memory structure, not just a list UI.
-3. `Memory list with actions`
-   Demonstrates governance and reversibility.
-4. `Protected / soft-mask examples`
-   Highlights the safety and policy layer.
-5. `Host preview or adapter view`
-   Shows that the system is plugin-oriented, not a static page.
-
-## What To Emphasize In Conversation
-
-When introducing Pensieve in a repository, interview, or demo, emphasize:
-
-- `Observability`
-  The system exposes what memory exists and what is prominent.
-- `Interpretability`
-  The dashboard compresses memory into keywords, themes, and ranked fragments.
-- `Governability`
-  Users can intervene with reversible actions rather than hidden or destructive operations.
-- `Architecture`
-  The project is intentionally modular and plugin-oriented.
-
-## What Not To Overclaim
-
-Avoid claiming that Pensieve already provides:
-
-- production-native host bindings
-- full cross-platform plugin packaging
-- real-world synced memory infrastructure
-- complete agent memory introspection across every provider
-
-The strongest honest framing is:
-
-**Pensieve is already a credible plugin-ready system with strong product direction and clean architecture, while still being early in host-native integration.**
+[English README](../README.md) · [中文说明](../README.zh-CN.md) ·
+[Migration](MEMORY_MIGRATION.md) · [Privacy](PRIVACY.md)

@@ -1,4 +1,5 @@
 import type { ActivationResult, ScoredMemory } from "./memory.ts";
+import { redactGeneratedResponse, redactSensitiveText } from "./privacy.ts";
 
 export type PensieveMode = "mock" | "live";
 
@@ -79,7 +80,7 @@ export function partitionMemoriesForQuery(memories: readonly ScoredMemory[]): Pa
 export function buildMockNarrative(result: ActivationResult): NarrativeState {
   const topMemories = result.memories.slice(0, 3);
 
-  return {
+  return redactGeneratedResponse({
     answer: result.response,
     summary: topMemories.length
       ? `Most activated traces: ${topMemories.map((memory) => memory.content).join(" ")}`
@@ -90,8 +91,8 @@ export function buildMockNarrative(result: ActivationResult): NarrativeState {
     })),
     provider: "local-simulation",
     model: "heuristic-memory-engine",
-    source: "mock"
-  };
+    source: "mock" as const
+  });
 }
 
 export function mergeMemoryExplanationMap(
@@ -104,5 +105,5 @@ export function mergeMemoryExplanationMap(
     next[explanation.memory_id] = explanation.why;
   });
 
-  return next;
+  return Object.fromEntries(Object.entries(next).map(([id, text]) => [id, redactSensitiveText(text)]));
 }

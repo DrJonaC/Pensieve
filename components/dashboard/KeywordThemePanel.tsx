@@ -1,3 +1,6 @@
+"use client";
+
+import { useLocale } from "@/lib/locale";
 import {
   type DashboardKeyword,
   type DashboardTheme
@@ -15,6 +18,7 @@ export function KeywordThemePanel({
   themes,
   expanded
 }: KeywordThemePanelProps) {
+  const { ui } = useLocale();
   const portrait = presentDashboardPriorityPortrait({
     visible_memories: [],
     hidden_memories: [],
@@ -31,10 +35,10 @@ export function KeywordThemePanel({
   return (
     <section className="dashboard-panel rounded-[1.45rem] p-4">
       <div>
-        <p className="dashboard-kicker">Priority</p>
-        <h3 className="dashboard-section-title mt-1">What the system holds prominent</h3>
+        <p className="dashboard-kicker">{ui("Priority")}</p>
+        <h3 className="dashboard-section-title mt-1">{ui("What the system holds prominent")}</h3>
         <p className="dashboard-subcopy mt-2">
-          Weighted keywords and surfaced themes distilled from the current memory field.
+          {ui("Weighted keywords and surfaced themes distilled from the current memory field.")}
         </p>
       </div>
 
@@ -55,7 +59,7 @@ export function KeywordThemePanel({
             );
           })
         ) : (
-          <p className="dashboard-empty-copy">No priority keywords are currently visible in the active memory field.</p>
+          <p className="dashboard-empty-copy">{ui("No priority keywords are currently visible in the active memory field.")}</p>
         )}
       </div>
 
@@ -63,7 +67,7 @@ export function KeywordThemePanel({
         <div className="mt-5">
           <div className="dashboard-accent-line" />
           <div className="mt-4">
-            <p className="dashboard-meta-note">Surfaced Themes</p>
+            <p className="dashboard-meta-note">{ui("Surfaced Themes")}</p>
             <div className="mt-3 grid gap-2.5">
               {themes.length > 0 ? (
                 portrait.themes.map((theme) => (
@@ -73,14 +77,14 @@ export function KeywordThemePanel({
                   >
                     <div className="flex items-center justify-between gap-3">
                       <span className="font-medium text-slate-800">{theme.label}</span>
-                      <span className="dashboard-meta-note">{theme.memoryCount} memories</span>
+                      <span className="dashboard-meta-note">{theme.memoryCount} {ui("memories")}</span>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="rounded-[1rem] border border-dashed border-[rgba(122,150,144,0.22)] bg-white/58 px-3 py-3">
                   <p className="dashboard-empty-copy">
-                    No surfaced themes are available until more visible memories remain in the field.
+                    {ui("No surfaced themes are available until more visible memories remain in the field.")}
                   </p>
                 </div>
               )}

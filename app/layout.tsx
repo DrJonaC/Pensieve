@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/AppShell";
 import { PensieveProvider } from "@/lib/session";
 import "./globals.css";
+import { LocaleProvider } from "@/lib/locale";
 
 export const metadata: Metadata = {
   title: "Pensieve Memory Dashboard",
@@ -16,9 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-body">
-        <PensieveProvider>
+        <LocaleProvider><PensieveProvider>
           <AppShell>{children}</AppShell>
-        </PensieveProvider>
+        </PensieveProvider></LocaleProvider>
       </body>
     </html>
   );

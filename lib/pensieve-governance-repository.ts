@@ -1,12 +1,15 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { configuredSecrets } from "./privacy-server.ts";
+import { redactSensitiveText } from "./privacy.ts";
 
 import {
   createGovernanceReceipt,
   createGovernanceReport,
   getGovernancePendingChanges,
   renderGovernanceReportMarkdown,
+  redactGovernanceReport,
   type GovernanceBridgeStatus,
   type GovernanceReceipt,
   type GovernanceReport,
@@ -14,7 +17,7 @@ import {
 } from "./pensieve-governance-bridge.ts";
 import { type DashboardMemoryRecord } from "./pensieve-dashboard-core.ts";
 
-const defaultGovernanceRoot = path.join(process.cwd(), "data", "pensieve-governance");
+const defaultGovernanceRoot = path.join(process.env.PENSIEVE_DATA_DIR ?? path.join(process.cwd(), "data"), "pensieve-governance");
 
 type GovernanceRepositoryOptions = {
   rootPath?: string;
@@ -56,7 +59,8 @@ export async function readLatestGovernanceReport(
   options: GovernanceRepositoryOptions = {}
 ): Promise<GovernanceReport | null> {
   const { rootPath } = resolveOptions(options);
-  return readLatestJson<GovernanceReport>(path.join(rootPath, "reports"));
+  const report = await readLatestJson<GovernanceReport>(path.join(rootPath, "reports"));
+  return report ? redactGovernanceReport(report, configuredSecrets()) : null;
 }
 
 export async function readLatestGovernanceReceipt(
@@ -75,9 +79,10 @@ export async function readGovernanceReport(
   }
 
   const { rootPath } = resolveOptions(options);
-  return JSON.parse(
+  const report = JSON.parse(
     await readFile(path.join(rootPath, "reports", `${reportId}.json`), "utf8")
   ) as GovernanceReport;
+  return redactGovernanceReport(report, configuredSecrets());
 }
 
 export async function getGovernanceBridgeStatus(input: {
@@ -109,14 +114,15 @@ export async function writeGovernanceReport(input: {
   const { rootPath, now, idFactory } = resolveOptions(input.options);
   const createdAt = now();
   const previousReport = await readLatestGovernanceReport({ rootPath });
-  const report = createGovernanceReport({
+  const secrets = configuredSecrets();
+  const report = redactGovernanceReport(createGovernanceReport({
     reportId: buildArtifactId("governance", createdAt, idFactory),
     createdAt: createdAt.toISOString(),
     provider: input.provider,
-    currentMemories: input.currentMemories,
+    currentMemories: input.currentMemories.map(memory => ({ ...memory, content: redactSensitiveText(memory.content, secrets) })),
     baselineMemories: input.baselineMemories,
     previousReport
-  });
+  }), secrets);
 
   if (report.changes.length === 0) {
     throw new Error("No governance changes are pending.");

@@ -1,11 +1,15 @@
 "use client";
 
+import { useLocale } from "@/lib/locale";
+import { redactSensitiveText } from "@/lib/privacy";
+
 import { startTransition, useCallback, useEffect, useMemo, useState } from "react";
 import { GovernanceBridgePanel } from "@/components/dashboard/GovernanceBridgePanel";
+import { subscribeMemoryChanges } from "@/lib/memory-events";
 import { KeywordThemePanel } from "@/components/dashboard/KeywordThemePanel";
 import { MemoryListPanel } from "@/components/dashboard/MemoryListPanel";
 import { SnapshotCard } from "@/components/dashboard/SnapshotCard";
-import { createLocalMemoryProvider } from "@/lib/pensieve-local-provider";
+import { createPersistedMemoryProvider } from "@/lib/pensieve-persisted-provider";
 import {
   applyDashboardAction,
   loadDashboardState
@@ -46,8 +50,9 @@ export function DashboardShell({
   onShellError,
   provider
 }: DashboardShellProps) {
+  const { ui } = useLocale();
   const stableProvider = useMemo(
-    () => provider ?? createLocalMemoryProvider(),
+    () => provider ?? createPersistedMemoryProvider(),
     [provider]
   );
   const [state, setState] = useState<DashboardState | null>(null);
@@ -124,6 +129,15 @@ export function DashboardShell({
   useEffect(() => {
     void refreshGovernanceStatus();
   }, [refreshGovernanceStatus]);
+
+  useEffect(() => {
+    let active = true;
+    const unsubscribe = subscribeMemoryChanges(() => {
+      void loadDashboardState(stableProvider).then(next => { if (active) setState(next); })
+        .catch(reason => { if (active) setError(reason instanceof Error ? reason.message : "Refresh failed"); });
+    });
+    return () => { active = false; unsubscribe(); };
+  }, [stableProvider]);
 
   const runAction = (action: DashboardAction) => {
     setPendingActionId(action.memory_id);
@@ -206,15 +220,15 @@ export function DashboardShell({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="dashboard-kicker">Pensieve</p>
-            <h2 className="dashboard-heading mt-1">Memory Dashboard</h2>
+            <h2 className="dashboard-heading mt-1">{ui("Memory Dashboard")}</h2>
             <p className="dashboard-subcopy mt-2 max-w-[20rem]">
-              A quiet local panel for inspecting what the system continues to hold in view.
+              {ui("A quiet local panel for inspecting what the system continues to hold in view.")}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <span className="dashboard-status-pill">Query-free</span>
-              <span className="dashboard-status-pill">Local provider</span>
-              <span className="dashboard-status-pill">Structured memory</span>
-              <span className="dashboard-status-pill capitalize">{shellMode.modeLabel} mode</span>
+              <span className="dashboard-status-pill">{ui("Query-free")}</span>
+              <span className="dashboard-status-pill">{ui("Local provider")}</span>
+              <span className="dashboard-status-pill">{ui("Structured memory")}</span>
+              <span className="dashboard-status-pill capitalize">{ui(shellMode.modeLabel)} {ui("mode")}</span>
               {hostLabel ? <span className="dashboard-status-pill">{hostLabel}</span> : null}
             </div>
           </div>
@@ -229,22 +243,22 @@ export function DashboardShell({
             }
             className="dashboard-toggle"
           >
-            {isExpanded ? "Collapse" : "Expand"}
+            {isExpanded ? ui("Collapse") : ui("Expand")}
           </button>
         </div>
       </div>
 
       {isLoading ? (
         <div className="dashboard-panel mt-4 rounded-[1.45rem] p-5">
-          <p className="dashboard-kicker">Loading</p>
-          <p className="mt-2 text-sm text-slate-600">Drawing the current memory field.</p>
+          <p className="dashboard-kicker">{ui("Loading")}</p>
+          <p className="mt-2 text-sm text-slate-600">{ui("Drawing the current memory field.")}</p>
         </div>
       ) : null}
 
       {error ? (
         <div className="dashboard-panel mt-4 rounded-[1.45rem] border-[rgba(160,115,108,0.22)] p-5">
-          <p className="dashboard-kicker">Error</p>
-          <p className="mt-2 text-sm text-[rgb(110,79,76)]">{error}</p>
+          <p className="dashboard-kicker">{ui("Error")}</p>
+          <p role="alert" className="mt-2 text-sm text-[rgb(110,79,76)]">{redactSensitiveText(error)}</p>
         </div>
       ) : null}
 
